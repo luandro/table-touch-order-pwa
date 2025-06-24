@@ -10,6 +10,7 @@ import type {
   TableUpdate,
   OrderUpdate 
 } from '@/types/supabase';
+import { mapToSupabaseOrderStatus } from '@/utils/dataTransform';
 
 // Restaurant service
 export const restaurantService = {
@@ -158,10 +159,11 @@ export const ordersService = {
   },
 
   async updateOrderStatus(id: string, status: string): Promise<Order> {
+    const supabaseStatus = mapToSupabaseOrderStatus(status);
     const { data, error } = await supabase
       .from('orders')
       .update({ 
-        status, 
+        status: supabaseStatus, 
         updated_at: new Date().toISOString() 
       })
       .eq('id', id)

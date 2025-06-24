@@ -25,17 +25,38 @@ const AdminDashboard = () => {
   useRealTimeTables();
 
   // Transform data for frontend use
-  const tables = supabaseTables.map(transformSupabaseTable);
+  const tables = supabaseTables.map(table => ({
+    ...transformSupabaseTable(table),
+    supabaseId: table.id, // Keep the original Supabase ID for navigation
+  }));
+  
+  // Get customer names from current orders
+  const tablesWithCustomers = tables.map(table => {
+    const tableOrders = supabaseOrders.filter(order => 
+      order.table_id === table.supabaseId && 
+      !['paid', 'cancelled'].includes(order.status || '')
+    );
+    const latestOrder = tableOrders.sort((a, b) => 
+      new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
+    )[0];
+    
+    return {
+      ...table,
+      customerName: latestOrder?.bill_name || undefined,
+      lastActivity: latestOrder ? new Date(latestOrder.created_at || '') : table.lastActivity,
+      status: tableOrders.length > 0 ? 'occupied' : table.status,
+    };
+  });
   
   const stats = {
     totalTables: tables.length,
-    occupiedTables: supabaseTables.filter(t => t.status === 'occupied').length,
+    occupiedTables: tablesWithCustomers.filter(t => t.status === 'occupied').length,
     pendingOrders: supabaseOrders.filter(o => o.status === 'pending').length,
     activeOrders: supabaseOrders.filter(o => !['paid', 'cancelled'].includes(o.status || '')).length
   };
 
   const handleTableClick = (tableId: number) => {
-    // Find the actual Supabase table ID for this table number
+    // Find the Supabase table by table number
     const supabaseTable = supabaseTables.find(t => t.table_number === tableId);
     if (supabaseTable) {
       navigate(`/admin/table/${supabaseTable.id}`);
@@ -162,7 +183,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {tables.map(table => (
+              {tablesWithCustomers.map(table => (
                 <TableCard
                   key={table.id}
                   table={table}
