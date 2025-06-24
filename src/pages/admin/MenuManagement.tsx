@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ArrowLeft, Plus, Edit, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Eye, EyeOff, Trash2, Settings } from 'lucide-react';
 import { useMenuCategories, useMenuItems, useDeleteMenuItem, useToggleMenuItemAvailability } from '@/hooks/useSupabaseData';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import type { MenuCategory as SupabaseMenuCategory, MenuItem as SupabaseMenuItem } from '@/types/supabase';
@@ -98,46 +98,74 @@ const MenuManagement = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header with improved mobile design */}
       <div className="bg-white shadow-sm">
         <div className="px-4 py-4 flex items-center justify-between">
           <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/admin')}
-              className="mr-3"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
+            {/* Circular back button for better touch target */}
+            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/admin')}
+                className="p-0 hover:bg-transparent"
+              >
+                <ArrowLeft className="w-4 h-4 text-orange-600" />
+              </Button>
+            </div>
             <div>
               <h1 className="text-xl font-bold text-orange-600">Menu Management</h1>
-              <p className="text-gray-600">Manage restaurant menu items</p>
+              <p className="text-gray-600 hidden sm:block">Manage restaurant menu items</p>
             </div>
           </div>
-          <Button
-            className="bg-orange-500 hover:bg-orange-600"
-            onClick={() => navigate('/admin/menu/new')}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Item
-          </Button>
+
+          {/* Desktop buttons */}
+          <div className="hidden sm:flex space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/admin/menu/categories')}
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Edit Categories
+            </Button>
+            <Button
+              className="bg-orange-500 hover:bg-orange-600"
+              onClick={() => navigate('/admin/menu/new')}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Item
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-4 pb-20 sm:pb-4">
         <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-          <TabsList className="w-full justify-start overflow-x-auto mb-6">
-            {categories.map(category => (
-              <TabsTrigger
-                key={category.id}
-                value={category.id}
-                className="flex items-center space-x-2 whitespace-nowrap"
-              >
-                <span>{category.icon}</span>
-                <span>{category.name}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="flex items-center justify-between mb-4">
+            <TabsList className="flex-1 justify-start overflow-x-auto">
+              {categories.map(category => (
+                <TabsTrigger
+                  key={category.id}
+                  value={category.id}
+                  className="flex items-center space-x-2 whitespace-nowrap"
+                >
+                  <span>{category.icon}</span>
+                  <span>{category.name}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {/* Mobile Edit Categories Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/admin/menu/categories')}
+              className="ml-2 sm:hidden"
+              title="Edit Categories"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+          </div>
 
           <div className="space-y-4">
             {filteredItems.length === 0 ? (
@@ -156,37 +184,49 @@ const MenuManagement = () => {
               </Card>
             ) : (
               filteredItems.map((item: SupabaseMenuItem) => (
-              <Card key={item.id}>
+              <Card key={item.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-4">
-                    <img
-                      src={item.image_url || `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 100)}`}
-                      alt={item.name}
-                      className="w-20 h-20 object-cover rounded"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-bold text-lg">{item.name}</h3>
-                          <p className="text-gray-600 text-sm mb-2">{item.description || 'No description'}</p>
-                          <div className="flex items-center space-x-3">
+                    {/* Optimized image for mobile */}
+                    <div className="flex-shrink-0">
+                      <img
+                        src={item.image_url || `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 100)}`}
+                        alt={item.name}
+                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg"
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-lg text-gray-900 truncate">{item.name}</h3>
+                          <p className="text-gray-600 text-sm mb-3 line-clamp-2 sm:line-clamp-1">
+                            {item.description || 'No description'}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                             <span className="text-orange-600 font-bold text-lg">
                               ${item.price}
                             </span>
-                            <Badge variant={item.active ? "default" : "destructive"}>
+                            <Badge
+                              variant={item.active ? "default" : "destructive"}
+                              className="text-xs"
+                            >
                               {item.active ? "Available" : "Unavailable"}
                             </Badge>
-                            <span className="text-sm text-gray-500">
+                            <span className="text-xs text-gray-500 hidden sm:inline">
                               Order: {item.order_index || 0}
                             </span>
                           </div>
                         </div>
-                        <div className="flex space-x-2">
+
+                        {/* Action buttons optimized for mobile */}
+                        <div className="flex items-center space-x-1 mt-3 sm:mt-0 sm:ml-4">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => navigate(`/admin/menu/edit/${item.id}`)}
                             title="Edit item"
+                            className="h-9 w-9 p-0"
                           >
                             <Edit className="w-4 h-4" />
                           </Button>
@@ -196,6 +236,7 @@ const MenuManagement = () => {
                             onClick={() => handleToggleAvailability(item)}
                             title={item.active ? "Mark as unavailable" : "Mark as available"}
                             disabled={toggleAvailabilityMutation.isPending}
+                            className="h-9 w-9 p-0"
                           >
                             {item.active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </Button>
@@ -205,7 +246,7 @@ const MenuManagement = () => {
                             onClick={() => handleDelete(item)}
                             title="Delete item"
                             disabled={deleteMutation.isPending}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 h-9 w-9 p-0"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -219,6 +260,19 @@ const MenuManagement = () => {
             )}
           </div>
         </Tabs>
+      </div>
+
+      {/* Floating Action Button for Mobile */}
+      <div className="fixed bottom-6 right-6 z-50 sm:hidden">
+        <Button
+          className="bg-orange-500 hover:bg-orange-600 active:bg-orange-700
+                     w-14 h-14 rounded-full shadow-lg hover:shadow-xl
+                     transform transition-all duration-200 ease-in-out
+                     hover:scale-105 active:scale-95 touch-target"
+          onClick={() => navigate('/admin/menu/new')}
+        >
+          <Plus className="w-6 h-6" />
+        </Button>
       </div>
 
       <ConfirmationDialog

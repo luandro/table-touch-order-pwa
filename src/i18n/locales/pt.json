@@ -29,7 +29,7 @@
       "price": "Preço",
       "status": "Status",
       "table": "Mesa",
-      "time": "Hora",
+      "time": "Tempo",
       "date": "Data",
       "notes": "Observações",
       "customer": "Cliente",
@@ -50,14 +50,14 @@
     "actions": {
       "addToCart": "Adicionar ao Carrinho",
       "viewDetails": "Ver Detalhes",
-      "placeOrder": "Fazer Pedido",
+      "placeOrder": "Realizar Pedido",
       "markReady": " Marcar como Pronto",
-      "markServed": "Marcar como Servido"
+      "markServed": " Marcar como Servido"
     }
   },
   "navigation": {
     "home": "Início",
-    "menu": "Menu",
+    "menu": "Cardápio",
     "orders": "Pedidos",
     "tables": "Mesas",
     "dashboard": "Painel",
@@ -68,13 +68,13 @@
   "customer": {
     "welcome": {
       "title": "Bem-vindo ao {{restaurantName}}",
-      "subtitle": "Por favor, insira seu nome para começar seu pedido",
+      "subtitle": "Por favor, insira seu nome para iniciar seu pedido",
       "tableNumber": "Mesa {{number}}",
       "loading": "Carregando sua mesa...",
       "startOrder": "Iniciar Pedido"
     },
     "menu": {
-      "title": "Menu",
+      "title": "Cardápio",
       "categories": "Categorias",
       "items": "Itens",
       "addToBill": "Adicionar à Conta",
@@ -82,13 +82,13 @@
       "itemCount": "{{count}} item",
       "itemCount_plural": "{{count}} itens",
       "specialInstructions": "Instruções Especiais (Opcional)",
-      "specialInstructionsPlaceholder": "Algumas solicitações especiais ou alergias...",
+      "specialInstructionsPlaceholder": "Quaisquer solicitações especiais ou alergias...",
       "addToBillWithPrice": "Adicionar à Conta - R$ {{price}}",
-      "rating": "Classificação: {{rating}}/5"
+      "rating": "Avaliação: {{rating}}/5"
     },
     "categories": {
       "appetizers": "Entradas",
-      "mains": "Pratos principais",
+      "mains": "Pratos Principais",
       "desserts": "Sobremesas",
       "beverages": "Bebidas",
       "salads": "Saladas",
@@ -96,21 +96,21 @@
     },
     "bill": {
       "title": "Sua Conta",
-      "empty": "Nenhum item na sua conta",
+      "empty": "Não há itens na sua conta",
       "customerInfo": "Informações do Cliente",
       "orderItems": "Itens do Pedido",
       "eachPrice": "R$ {{price}} cada",
-      "itemNote": "Nota: {{note}}",
-      "placeOrder": "Fazer Pedido",
-      "continueEditing": "Continuar Editando o Pedido"
+      "itemNote": "Observação: {{note}}",
+      "placeOrder": "Realizar Pedido",
+      "continueEditing": "Continuar Edição do Pedido"
     },
     "order": {
-      "placed": "Pedido feito com sucesso!",
+      "placed": "Pedido realizado com sucesso!",
       "confirmation": "Confirmação do Pedido",
       "details": "Detalhes do Pedido",
-      "notFound": "Pedido não encontrado",
-      "notFoundMessage": "O código do pedido que você procura não existe.",
-      "orderNumber": "Pedido nº {{orderId}}"
+      "notFound": "Pedido Não Encontrado",
+      "notFoundMessage": "O ID do pedido que você procura não existe.",
+      "orderNumber": "Pedido #{{orderId}}"
     },
     "form": {
       "enterName": "Digite seu nome",
@@ -122,11 +122,11 @@
   "admin": {
     "login": {
       "title": "Admin Bella Vista",
-      "subtitle": "Entre para gerenciar o restaurante",
+      "subtitle": "Faça login para gerenciar o restaurante",
       "emailPlaceholder": "admin@bellavista.com",
       "passwordPlaceholder": "Digite a senha",
       "invalidCredentials": "Credenciais inválidas. Use admin@bellavista.com / admin123",
-      "demoCredentials": "Credenciais de demonstração:",
+      "demoCredentials": "Credenciais de Demonstração:",
       "demoEmail": "Email: admin@bellavista.com",
       "demoPassword": "Senha: admin123"
     },
@@ -157,16 +157,16 @@
       "tableInfo": "Informações da Mesa",
       "lastActivity": "Última Atividade",
       "currentOrders": "Pedidos Atuais",
-      "noOrders": "Sem pedidos nesta mesa",
+      "noOrders": "Nenhum pedido para esta mesa",
       "actions": {
-        "markFree": "Marcar Mesa Livre",
+        "markFree": "Liberar Mesa",
         "reserve": "Reservar Mesa",
         "viewHistory": "Ver Histórico",
-        "generateQR": "Gerar QR Code"
+        "generateQR": "Gerar Código QR"
       }
     },
     "orders": {
-      "orderNumber": "Pedido nº {{id}}",
+      "orderNumber": "Pedido #{{id}}",
       "confirmOrder": "Confirmar Pedido",
       "cancelOrder": "Cancelar Pedido",
       "status": {
@@ -179,12 +179,61 @@
     },
     "menu": {
       "management": "Gerenciamento do Cardápio",
-      "subtitle": "Gerenciar itens do menu do restaurante",
+      "subtitle": "Gerenciar itens do cardápio do restaurante",
       "addItem": "Adicionar Item",
-      "noItems": "Sem itens nesta categoria",
+      "editItem": "Editar Item",
+      "createItem": "Criar Item",
+      "updateItem": "Atualizar Item",
+      "deleteItem": "Excluir Item",
+      "noItems": "Nenhum item nesta categoria",
+      "form": {
+        "title": "Detalhes do Item",
+        "name": "Nome",
+        "description": "Descrição",
+        "price": "Preço",
+        "category": "Categoria",
+        "orderIndex": " Índice de Pedido",
+        "availability": "Disponibilidade",
+        "image": "Imagem do Item",
+        "available": "Disponível",
+        "unavailable": "Indisponível",
+        "placeholders": {
+          "name": "Digite o nome do item",
+          "description": "Digite a descrição do item",
+          "price": "0,00",
+          "selectCategory": "Selecione a categoria",
+          "orderIndex": "0"
+        },
+        "validation": {
+          "nameRequired": "Nome do item é obrigatório",
+          "nameMinLength": "O nome deve ter pelo menos 2 caracteres",
+          "descriptionRequired": "Descrição é obrigatória",
+          "descriptionMinLength": "A descrição deve ter pelo menos 10 caracteres",
+          "priceRequired": "Preço é obrigatório",
+          "priceMin": "O preço deve ser pelo menos R$ 0,01",
+          "categoryRequired": "Categoria é obrigatória",
+          "orderIndexMin": "O índice de pedido deve ser 0 ou maior"
+        },
+        "imageUpload": {
+          "dragDrop": "Arraste e solte uma imagem aqui, ou clique para selecionar",
+          "dragActive": "Solte a imagem aqui...",
+          "fileTypes": "JPG, PNG, WebP até 5MB",
+          "processing": "Processando imagem...",
+          "invalidFile": "Arquivo inválido",
+          "onlyImages": "Somente arquivos JPG, PNG e WebP são permitidos",
+          "fileTooLarge": "O arquivo deve ter menos de 5MB",
+          "processingError": "Falha ao processar a imagem. Por favor, tente novamente."
+        }
+      },
       "itemActions": {
         "edit": "Editar Item",
-        "toggleAvailability": "Alternar Disponibilidade"
+        "toggleAvailability": "Alterar Disponibilidade",
+        "delete": "Excluir Item",
+        "editTitle": "Editar item",
+        "toggleTitle": "Marcar como indisponível",
+        "toggleTitleActive": "Marcar como disponível",
+        "deleteTitle": "Excluir item",
+        "deleteConfirm": "Tem certeza de que deseja excluir \"{{name}}\"? Esta ação não pode ser desfeita."
       }
     }
   },
@@ -196,32 +245,43 @@
       "maxLength": "Não deve ter mais de {{max}} caracteres"
     },
     "placeholders": {
-      "searchItems": "Buscar itens do menu...",
-      "customerNotes": "Notas do cliente ou solicitações especiais...",
+      "searchItems": "Pesquisar itens do cardápio...",
+      "customerNotes": "Observações ou solicitações especiais do cliente...",
       "itemDescription": "Insira a descrição do item..."
     }
   },
   "errors": {
     "generic": "Algo deu errado. Por favor, tente novamente.",
     "network": "Erro de rede. Por favor, verifique sua conexão.",
-    "notFound": "Recurso solicitado não encontrado.",
-    "unauthorized": "Você não está autorizado a realizar esta ação.",
-    "serverError": "Erro do servidor. Por favor, tente mais tarde."
+    "notFound": "Recurso não encontrado.",
+    "unauthorized": "Você não tem autorização para realizar esta ação.",
+    "serverError": "Erro no servidor. Por favor, tente novamente mais tarde."
   },
   "notifications": {
-    "orderPlaced": "Seu pedido foi realizado com sucesso!",
+    "orderPlaced": "Seu pedido foi efetuado com sucesso!",
     "orderUpdated": "Pedido atualizado com sucesso",
     "orderCancelled": "Pedido foi cancelado",
     "itemAdded": "Item adicionado à conta",
     "itemRemoved": "Item removido da conta",
     "saveSuccess": "Alterações salvas com sucesso",
-    "deleteSuccess": "Item excluído com sucesso"
+    "deleteSuccess": "Item excluído com sucesso",
+    "menuItem": {
+      "created": "Item do cardápio criado com sucesso!",
+      "updated": "Item do cardápio atualizado com sucesso!",
+      "deleted": "Item do cardápio removido com sucesso!",
+      "availabilityUpdated": "Disponibilidade do item do cardápio atualizado!",
+      "createError": "Falha ao criar o item do cardápio",
+      "updateError": "Falha ao atualizar o item do cardápio",
+      "deleteError": "Falha ao excluir o item do cardápio",
+      "availabilityError": "Falha ao atualizar disponibilidade",
+      "saveError": "Falha ao salvar o item do cardápio. Por favor, tente novamente."
+    }
   },
   "time": {
-    "justNow": "Agora mesmo",
-    "minutesAgo": "há {{count}} minuto",
-    "minutesAgo_plural": "há {{count}} minutos",
-    "hoursAgo": "há {{count}} hora",
-    "hoursAgo_plural": "há {{count}} horas"
+    "justNow": "Há pouco tempo",
+    "minutesAgo": "{{count}} minuto atrás",
+    "minutesAgo_plural": "{{count}} minutos atrás",
+    "hoursAgo": "{{count}} hora atrás",
+    "hoursAgo_plural": "{{count}} horas atrás"
   }
 }

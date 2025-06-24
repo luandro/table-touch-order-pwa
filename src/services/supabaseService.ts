@@ -99,6 +99,96 @@ export const menuService = {
     return data || [];
   },
 
+  async getAllCategories(): Promise<MenuCategory[]> {
+    const { data, error } = await supabase
+      .from('menu_categories')
+      .select('*')
+      .order('order_index');
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getCategoriesWithItemCount(): Promise<(MenuCategory & { item_count: number })[]> {
+    const { data, error } = await supabase
+      .from('menu_categories')
+      .select(`
+        *,
+        menu_items(count)
+      `)
+      .order('order_index');
+
+    if (error) throw error;
+
+    return (data || []).map(category => ({
+      ...category,
+      item_count: category.menu_items?.[0]?.count || 0
+    }));
+  },
+
+  async getCategoryById(id: string): Promise<MenuCategory | null> {
+    const { data, error } = await supabase
+      .from('menu_categories')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async createCategory(category: Omit<MenuCategory, 'id' | 'created_at' | 'updated_at'>): Promise<MenuCategory> {
+    const { data, error } = await supabase
+      .from('menu_categories')
+      .insert(category)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async updateCategory(id: string, updates: Partial<MenuCategory>): Promise<MenuCategory> {
+    const { data, error } = await supabase
+      .from('menu_categories')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteCategory(id: string): Promise<MenuCategory> {
+    // Soft delete - set active to false
+    const { data, error } = await supabase
+      .from('menu_categories')
+      .update({ active: false })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async reorderCategories(categoryIds: string[]): Promise<void> {
+    const updates = categoryIds.map((id, index) => ({
+      id,
+      order_index: index
+    }));
+
+    for (const update of updates) {
+      const { error } = await supabase
+        .from('menu_categories')
+        .update({ order_index: update.order_index })
+        .eq('id', update.id);
+
+      if (error) throw error;
+    }
+  },
+
   async getMenuItems(): Promise<MenuItem[]> {
     const { data, error } = await supabase
       .from('menu_items')

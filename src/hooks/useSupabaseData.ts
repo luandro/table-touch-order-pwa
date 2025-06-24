@@ -10,7 +10,7 @@ import {
   subscribeToTables
 } from '@/services/supabaseService';
 import { useEffect } from 'react';
-import type { OrderInsert, TableUpdate, MenuItem, MenuItemInsert, MenuItemUpdate } from '@/types/supabase';
+import type { OrderInsert, TableUpdate, MenuItem, MenuItemInsert, MenuItemUpdate, MenuCategory } from '@/types/supabase';
 
 // Tables hooks
 export const useTables = () => {
@@ -41,6 +41,28 @@ export const useMenuCategories = () => {
   return useQuery({
     queryKey: ['menu-categories'],
     queryFn: menuService.getCategories,
+  });
+};
+
+export const useAllMenuCategories = () => {
+  return useQuery({
+    queryKey: ['all-menu-categories'],
+    queryFn: menuService.getAllCategories,
+  });
+};
+
+export const useCategoriesWithItemCount = () => {
+  return useQuery({
+    queryKey: ['categories-with-count'],
+    queryFn: menuService.getCategoriesWithItemCount,
+  });
+};
+
+export const useCategory = (categoryId: string) => {
+  return useQuery({
+    queryKey: ['category', categoryId],
+    queryFn: () => menuService.getCategoryById(categoryId),
+    enabled: !!categoryId,
   });
 };
 
@@ -289,6 +311,109 @@ export const useToggleMenuItemAvailability = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to update availability",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+// Category mutations
+export const useCreateCategory = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (category: Omit<MenuCategory, 'id' | 'created_at' | 'updated_at'>) =>
+      menuService.createCategory(category),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['all-menu-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['categories-with-count'] });
+      toast({
+        title: "Category Created",
+        description: "Menu category has been created successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create category",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useUpdateCategory = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<MenuCategory> }) =>
+      menuService.updateCategory(id, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['all-menu-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['categories-with-count'] });
+      toast({
+        title: "Category Updated",
+        description: "Menu category has been updated successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update category",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useDeleteCategory = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (id: string) => menuService.deleteCategory(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['all-menu-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['categories-with-count'] });
+      toast({
+        title: "Category Deleted",
+        description: "Menu category has been removed successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete category",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useReorderCategories = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (categoryIds: string[]) => menuService.reorderCategories(categoryIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['all-menu-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['categories-with-count'] });
+      toast({
+        title: "Categories Reordered",
+        description: "Category order has been updated successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reorder categories",
         variant: "destructive",
       });
     },
