@@ -8,6 +8,16 @@
 
 There are several ways of editing your application.
 
+**Environment Variables Setup**
+
+This project uses environment variables for Supabase configuration. You must create a `.env` file in the project root before running the app:
+
+1. Copy the example file:
+   ```sh
+   cp .env.example .env
+   ```
+2. Edit `.env` and fill in your Supabase project URL and anon key.
+
 **Use Lovable**
 
 Simply visit the [Lovable Project](https://lovable.dev/projects/6bd97d44-813c-4934-82ca-ccdf6a774f77) and start prompting.
@@ -32,7 +42,11 @@ cd <YOUR_PROJECT_NAME>
 # Step 3: Install the necessary dependencies.
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Copy and edit your environment variables file.
+cp .env.example .env
+# Edit .env and fill in your Supabase credentials
+
+# Step 5: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
 
