@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Minus, Plus, ArrowLeft } from 'lucide-react';
 import { BillItem } from '@/types';
+import { useCreateOrder, useTableByNumber } from '@/hooks/useSupabaseData';
+import type { OrderInsert } from '@/types/supabase';
 
 const Bill = () => {
   const { tableId } = useParams();
@@ -16,10 +18,14 @@ const Bill = () => {
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [customerName, setCustomerName] = useState('');
 
+  // Supabase hooks
+  const { mutate: createOrder, isPending: isCreatingOrder } = useCreateOrder();
+  const { data: table } = useTableByNumber(parseInt(tableId || '0'));
+
   useEffect(() => {
     const storedItems = localStorage.getItem('billItems');
     const storedName = localStorage.getItem('customerName');
-    
+
     if (storedItems) {
       setBillItems(JSON.parse(storedItems));
     }
@@ -32,8 +38,8 @@ const Bill = () => {
     if (newQuantity === 0) {
       setBillItems(prev => prev.filter(item => item.id !== itemId));
     } else {
-      setBillItems(prev => 
-        prev.map(item => 
+      setBillItems(prev =>
+        prev.map(item =>
           item.id === itemId ? { ...item, quantity: newQuantity } : item
         )
       );
@@ -44,10 +50,42 @@ const Bill = () => {
   const total = subtotal; // In real app, might include tax/service charges
 
   const handlePlaceOrder = () => {
-    // In real app, this would submit the order
-    alert(t('customer.order.placed'));
-    localStorage.removeItem('billItems');
-    navigate(`/table/${tableId}`);
+    if (!table || billItems.length === 0 || !customerName.trim()) {
+      return;
+    }
+
+    // Transform bill items to the format expected by Supabase
+    const orderItems = billItems.map(item => ({
+      item_id: item.menuItem.id,
+      name: item.menuItem.name,
+      description: item.menuItem.description,
+      price: item.menuItem.price,
+      quantity: item.quantity,
+      notes: item.notes || null,
+      image: item.menuItem.image,
+      category: item.menuItem.category
+    }));
+
+    const orderPayload: OrderInsert = {
+      table_id: table.id,
+      bill_name: customerName.trim(),
+      items: orderItems as any, // JSON field
+      subtotal: subtotal,
+      total: total,
+      status: 'pending'
+    };
+
+    createOrder(orderPayload, {
+      onSuccess: () => {
+        localStorage.removeItem('billItems');
+        localStorage.removeItem('customerName');
+        navigate(`/table/${tableId}`);
+      },
+      onError: (error) => {
+        console.error('Failed to create order:', error);
+        // Error handling is done by the hook's toast
+      }
+    });
   };
 
   return (
@@ -55,8 +93,8 @@ const Bill = () => {
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="px-4 py-4 flex items-center">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             onClick={() => navigate(`/table/${tableId}`)}
             className="mr-3"
@@ -103,8 +141,8 @@ const Bill = () => {
             ) : (
               billItems.map(item => (
                 <div key={item.id} className="flex items-center space-x-4 py-3 border-b last:border-b-0">
-                  <img 
-                    src={item.menuItem.image} 
+                  <img
+                    src={item.menuItem.image}
                     alt={item.menuItem.name}
                     className="w-16 h-16 object-cover rounded"
                   />
@@ -155,13 +193,13 @@ const Bill = () => {
                   <span className="text-orange-600">${total.toFixed(2)}</span>
                 </div>
               </div>
-              <Button 
+              <Button
                 onClick={handlePlaceOrder}
                 className="w-full mt-6 bg-orange-500 hover:bg-orange-600"
                 size="lg"
-                disabled={billItems.length === 0 || !customerName.trim()}
+                disabled={billItems.length === 0 || !customerName.trim() || isCreatingOrder}
               >
-                {t('customer.bill.placeOrder')}
+                {isCreatingOrder ? (t('common.loading') || 'Placing order...') : (t('customer.bill.placeOrder') || 'Place Order')}
               </Button>
             </CardContent>
           </Card>

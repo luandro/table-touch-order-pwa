@@ -5,13 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, User, Clock, Receipt, QrCode } from 'lucide-react';
-import { 
-  useTable, 
-  useOrdersByTable, 
-  useUpdateOrderStatus, 
+import {
+  useTable,
+  useOrdersByTable,
+  useUpdateOrderStatus,
   useUpdateTable,
   useRealTimeOrders,
-  useRealTimeTables 
+  useRealTimeTables
 } from '@/hooks/useSupabaseData';
 import { transformSupabaseOrder } from '@/utils/dataTransform';
 import { useToast } from '@/hooks/use-toast';
@@ -20,15 +20,15 @@ const TableDetail = () => {
   const { tableId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   // Enable real-time updates
   useRealTimeOrders();
   useRealTimeTables();
-  
+
   // Fetch real data from Supabase
   const { data: table, isLoading: tableLoading } = useTable(tableId || '');
   const { data: supabaseOrders = [], isLoading: ordersLoading } = useOrdersByTable(tableId || '');
-  
+
   // Mutations for updating data
   const updateOrderStatus = useUpdateOrderStatus();
   const updateTable = useUpdateTable();
@@ -93,9 +93,9 @@ const TableDetail = () => {
 
   const handleTableStatusUpdate = async (newStatus: string) => {
     try {
-      await updateTable.mutateAsync({ 
-        id: tableId!, 
-        updates: { status: newStatus } 
+      await updateTable.mutateAsync({
+        id: tableId!,
+        updates: { status: newStatus }
       });
     } catch (error) {
       console.error('Failed to update table status:', error);
@@ -134,8 +134,8 @@ const TableDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm">
         <div className="px-4 py-4 flex items-center">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             onClick={() => navigate('/admin')}
             className="mr-3"
@@ -176,7 +176,7 @@ const TableDetail = () => {
                 <p className="font-medium flex items-center space-x-1">
                   <Clock className="w-4 h-4" />
                   <span>
-                    {activeOrders.length > 0 
+                    {activeOrders.length > 0
                       ? new Date(Math.max(...activeOrders.map(o => o.timestamp.getTime()))).toLocaleString()
                       : new Date(table.created_at).toLocaleString()
                     }
@@ -220,8 +220,8 @@ const TableDetail = () => {
                     </div>
                     <div className="flex space-x-2 mt-3">
                       {order.status === 'pending' && (
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="bg-green-500 hover:bg-green-600"
                           onClick={() => handleOrderStatusUpdate(order.id, 'confirmed')}
                           disabled={updateOrderStatus.isPending}
@@ -230,8 +230,8 @@ const TableDetail = () => {
                         </Button>
                       )}
                       {order.status === 'confirmed' && (
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="bg-blue-500 hover:bg-blue-600"
                           onClick={() => handleOrderStatusUpdate(order.id, 'preparing')}
                           disabled={updateOrderStatus.isPending}
@@ -240,8 +240,8 @@ const TableDetail = () => {
                         </Button>
                       )}
                       {order.status === 'preparing' && (
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="bg-green-500 hover:bg-green-600"
                           onClick={() => handleOrderStatusUpdate(order.id, 'ready')}
                           disabled={updateOrderStatus.isPending}
@@ -250,8 +250,8 @@ const TableDetail = () => {
                         </Button>
                       )}
                       {order.status === 'ready' && (
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="bg-green-500 hover:bg-green-600"
                           onClick={() => handleOrderStatusUpdate(order.id, 'delivered')}
                           disabled={updateOrderStatus.isPending}
@@ -259,8 +259,8 @@ const TableDetail = () => {
                           Mark Served
                         </Button>
                       )}
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => handleOrderStatusUpdate(order.id, 'cancelled')}
                         disabled={updateOrderStatus.isPending}
@@ -282,27 +282,27 @@ const TableDetail = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3">
-              <Button 
+              <Button
                 variant="outline"
                 onClick={handleMarkTableFree}
                 disabled={updateTable.isPending}
               >
                 Mark Table Free
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={handleReserveTable}
                 disabled={updateTable.isPending}
               >
                 Reserve Table
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={handleViewHistory}
               >
                 View History
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={handleGenerateQRCode}
                 className="flex items-center space-x-2"

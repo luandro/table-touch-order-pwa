@@ -1,10 +1,10 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  tablesService, 
-  menuService, 
-  ordersService, 
+import {
+  tablesService,
+  menuService,
+  ordersService,
   restaurantService,
   subscribeToOrders,
   subscribeToTables
@@ -28,11 +28,11 @@ export const useTable = (tableId: string) => {
   });
 };
 
-export const useTableByNumber = (tableNumber: number) => {
+export const useTableByNumber = (tableNumber: number, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['table-number', tableNumber],
     queryFn: () => tablesService.getTableByNumber(tableNumber),
-    enabled: !!tableNumber,
+    enabled: options?.enabled !== undefined ? options.enabled : !!tableNumber,
   });
 };
 
@@ -48,6 +48,14 @@ export const useMenuItems = () => {
   return useQuery({
     queryKey: ['menu-items'],
     queryFn: menuService.getMenuItems,
+  });
+};
+
+export const useMenuItemsByCategory = (categoryId: string) => {
+  return useQuery({
+    queryKey: ['menu-items', 'category', categoryId],
+    queryFn: () => menuService.getMenuItemsByCategory(categoryId),
+    enabled: !!categoryId,
   });
 };
 
@@ -67,11 +75,11 @@ export const useOrdersByTable = (tableId: string) => {
   });
 };
 
-export const useOrder = (orderId: string) => {
+export const useOrder = (orderId: string, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['order', orderId],
     queryFn: () => ordersService.getOrderById(orderId),
-    enabled: !!orderId,
+    enabled: options?.enabled !== undefined ? options.enabled : !!orderId,
   });
 };
 
@@ -112,7 +120,7 @@ export const useUpdateOrderStatus = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => 
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
       ordersService.updateOrderStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -136,7 +144,7 @@ export const useUpdateTable = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: TableUpdate }) => 
+    mutationFn: ({ id, updates }: { id: string; updates: TableUpdate }) =>
       tablesService.updateTableStatus(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tables'] });

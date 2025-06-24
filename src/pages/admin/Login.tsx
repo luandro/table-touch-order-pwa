@@ -14,7 +14,7 @@ const AdminLogin = () => {
   const { t } = useTranslation();
   const { signIn, signUp, user, loading } = useAuth();
   const { toast } = useToast();
-  
+
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -31,7 +31,7 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     try {
-      const { error } = isSignUp 
+      const { error } = isSignUp
         ? await signUp(credentials.email, credentials.password)
         : await signIn(credentials.email, credentials.password);
 
@@ -110,9 +110,9 @@ const AdminLogin = () => {
                 minLength={6}
               />
             </div>
-            
-            <Button 
-              type="submit" 
+
+            <Button
+              type="submit"
               className="w-full bg-orange-500 hover:bg-orange-600"
               disabled={isLoading}
             >
@@ -125,7 +125,7 @@ const AdminLogin = () => {
                 isSignUp ? 'Create Account' : t('common.buttons.login')
               )}
             </Button>
-            
+
             <Button
               type="button"
               variant="ghost"
@@ -136,7 +136,7 @@ const AdminLogin = () => {
               {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
             </Button>
           </form>
-          
+
           {!isSignUp && (
             <div className="mt-4 p-3 bg-gray-100 rounded text-sm">
               <p className="font-medium">Demo Instructions:</p>

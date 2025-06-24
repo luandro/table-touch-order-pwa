@@ -55,8 +55,8 @@ const NameInputModal = ({ isOpen, tableNumber, onSubmit }: NameInputModalProps) 
             />
             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
           </div>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full bg-orange-500 hover:bg-orange-600"
             size="lg"
           >

@@ -32,7 +32,7 @@ const queryClient = new QueryClient({
 // Admin route protection with real authentication
 const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -43,7 +43,7 @@ const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
       </div>
     );
   }
-  
+
   return user ? <>{children}</> : <Navigate to="/admin/login" replace />;
 };
 
@@ -54,34 +54,34 @@ const AppContent = () => (
     <Route path="/table/:tableId" element={<Menu />} />
     <Route path="/table/:tableId/bill" element={<Bill />} />
     <Route path="/order/:orderId" element={<ExistingOrder />} />
-    
+
     {/* Admin Routes */}
     <Route path="/admin/login" element={<AdminLogin />} />
-    <Route 
-      path="/admin" 
+    <Route
+      path="/admin"
       element={
         <ProtectedAdminRoute>
           <AdminDashboard />
         </ProtectedAdminRoute>
-      } 
+      }
     />
-    <Route 
-      path="/admin/table/:tableId" 
+    <Route
+      path="/admin/table/:tableId"
       element={
         <ProtectedAdminRoute>
           <TableDetail />
         </ProtectedAdminRoute>
-      } 
+      }
     />
-    <Route 
-      path="/admin/menu" 
+    <Route
+      path="/admin/menu"
       element={
         <ProtectedAdminRoute>
           <MenuManagement />
         </ProtectedAdminRoute>
-      } 
+      }
     />
-    
+
     {/* Catch-all route */}
     <Route path="*" element={<NotFound />} />
   </Routes>

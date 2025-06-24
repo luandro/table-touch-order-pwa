@@ -40,7 +40,7 @@ export const menuItems: MenuItem[] = [
     rating: 4.7,
     available: true
   },
-  
+
   // Main Dishes
   {
     id: 'main-1',
@@ -82,7 +82,7 @@ export const menuItems: MenuItem[] = [
     rating: 4.6,
     available: true
   },
-  
+
   // Desserts
   {
     id: 'dess-1',
@@ -114,7 +114,7 @@ export const menuItems: MenuItem[] = [
     rating: 4.5,
     available: true
   },
-  
+
   // Beverages
   {
     id: 'bev-1',

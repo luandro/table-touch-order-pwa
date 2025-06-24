@@ -172,7 +172,7 @@
       "cancelOrder": "Cancel Order",
       "status": {
         "pending": "Pending",
-        "confirmed": "Confirmed", 
+        "confirmed": "Confirmed",
         "preparing": "Preparing",
         "ready": "Ready",
         "served": "Served"
@@ -222,7 +222,7 @@
     "justNow": "Just now",
     "minutesAgo": "{{count}} minute ago",
     "minutesAgo_plural": "{{count}} minutes ago",
-    "hoursAgo": "{{count}} hour ago", 
+    "hoursAgo": "{{count}} hour ago",
     "hoursAgo_plural": "{{count}} hours ago"
   }
 }
