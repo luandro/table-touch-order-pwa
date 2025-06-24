@@ -1,0 +1,227 @@
+{
+  "common": {
+    "buttons": {
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "add": "Agregar",
+      "confirm": "Confirmar",
+      "back": "Atrás",
+      "continue": "Continuar",
+      "submit": "Enviar",
+      "close": "Cerrar",
+      "login": "Iniciar sesión",
+      "logout": "Cerrar sesión",
+      "view": "Ver",
+      "update": "Actualizar",
+      "remove": "Remover",
+      "clear": "Borrar"
+    },
+    "labels": {
+      "name": "Nombre",
+      "email": "Correo electrónico",
+      "phone": "Teléfono",
+      "password": "Contraseña",
+      "total": "Total",
+      "subtotal": "Subtotal",
+      "quantity": "Cantidad",
+      "price": "Precio",
+      "status": "Estado",
+      "table": "Mesa",
+      "time": "Hora",
+      "date": "Fecha",
+      "notes": "Notas",
+      "customer": "Cliente",
+      "order": "Pedido",
+      "rating": "Calificación"
+    },
+    "status": {
+      "loading": "Cargando...",
+      "error": "Error",
+      "success": "Éxito",
+      "pending": "Pendiente",
+      "completed": "Completado",
+      "cancelled": "Cancelado",
+      "active": "Activo",
+      "available": "Disponible",
+      "unavailable": "No disponible"
+    },
+    "actions": {
+      "addToCart": "Agregar al carrito",
+      "viewDetails": "Ver detalles",
+      "placeOrder": "Realizar pedido",
+      "markReady": "Marcar como listo",
+      "markServed": "Marcar como servido"
+    }
+  },
+  "navigation": {
+    "home": "Inicio",
+    "menu": "Menú",
+    "orders": "Pedidos",
+    "tables": "Mesas",
+    "dashboard": "Tablero",
+    "settings": "Configuraciones",
+    "admin": "Administrador",
+    "management": "Gestión"
+  },
+  "customer": {
+    "welcome": {
+      "title": "Bienvenido a {{restaurantName}}",
+      "subtitle": "Por favor, ingresa tu nombre para comenzar tu pedido",
+      "tableNumber": "Mesa {{number}}",
+      "loading": "Cargando tu mesa...",
+      "startOrder": "Comenzar pedido"
+    },
+    "menu": {
+      "title": "Menú",
+      "categories": "Categorías",
+      "items": "Items",
+      "addToBill": "Agregar a la cuenta",
+      "viewBill": "Ver cuenta",
+      "itemCount": "{{count}} artículo",
+      "itemCount_plural": "{{count}} artículos",
+      "specialInstructions": "Instrucciones especiales (Opcional)",
+      "specialInstructionsPlaceholder": "Cualquier petición especial o alergia...",
+      "addToBillWithPrice": "Agregar a la cuenta - ${{price}}",
+      "rating": "Calificación: {{rating}}/5"
+    },
+    "categories": {
+      "appetizers": "Entrantes",
+      "mains": "Platos principales",
+      "desserts": "Postres",
+      "beverages": "Bebidas",
+      "salads": "Ensaladas",
+      "soups": "Sopas"
+    },
+    "bill": {
+      "title": "Tu Cuenta",
+      "empty": "No hay artículos en tu cuenta",
+      "customerInfo": "Información del cliente",
+      "orderItems": "Artículos del pedido",
+      "eachPrice": "${{price}} c/u",
+      "itemNote": "Nota: {{note}}",
+      "placeOrder": "Realizar pedido",
+      "continueEditing": "Continuar editando el pedido"
+    },
+    "order": {
+      "placed": "¡Pedido realizado con éxito!",
+      "confirmation": "Confirmación del pedido",
+      "details": "Detalles del pedido",
+      "notFound": "Pedido no encontrado",
+      "notFoundMessage": "El ID de pedido que buscas no existe.",
+      "orderNumber": "Pedido #{{orderId}}"
+    },
+    "form": {
+      "enterName": "Ingresa tu nombre",
+      "nameRequired": "Por favor, ingresa un nombre válido (al menos 2 caracteres)",
+      "nameLabel": "Tu nombre",
+      "namePlaceholder": "Ingresa tu nombre"
+    }
+  },
+  "admin": {
+    "login": {
+      "title": "Administración de Bella Vista",
+      "subtitle": "Inicia sesión para gestionar el restaurante",
+      "emailPlaceholder": "admin@bellavista.com",
+      "passwordPlaceholder": "Ingresa la contraseña",
+      "invalidCredentials": "Credenciales inválidas. Usa admin@bellavista.com / admin123",
+      "demoCredentials": "Credenciales de prueba:",
+      "demoEmail": "Email: admin@bellavista.com",
+      "demoPassword": "Contraseña: admin123"
+    },
+    "dashboard": {
+      "title": "Administración de Bella Vista",
+      "subtitle": "Panel de gestión del restaurante",
+      "newOrdersAlert": "{{count}} nuevo pedido esperando confirmación",
+      "newOrdersAlert_plural": "{{count}} nuevos pedidos esperando confirmación",
+      "stats": {
+        "occupiedTables": "Mesas ocupadas",
+        "pendingOrders": "Pedidos pendientes",
+        "activeOrders": "Pedidos activos",
+        "totalTables": "Mesas totales"
+      },
+      "tablesOverview": "Resumen de mesas",
+      "viewOrders": "Ver pedidos",
+      "manageMenu": "Gestionar menú"
+    },
+    "tables": {
+      "status": {
+        "free": "Libre",
+        "occupied": "Ocupada",
+        "pending": "Pendiente",
+        "reserved": "Reservada"
+      },
+      "tableNumber": "Mesa {{number}}",
+      "tableManagement": "Gestión de mesas",
+      "tableInfo": "Información de la mesa",
+      "lastActivity": "Última actividad",
+      "currentOrders": "Pedidos actuales",
+      "noOrders": "No hay pedidos para esta mesa",
+      "actions": {
+        "markFree": "Marcar mesa como libre",
+        "reserve": "Reservar mesa",
+        "viewHistory": "Ver historial",
+        "generateQR": "Generar código QR"
+      }
+    },
+    "orders": {
+      "orderNumber": "Pedido #{{id}}",
+      "confirmOrder": "Confirmar pedido",
+      "cancelOrder": "Cancelar pedido",
+      "status": {
+        "pending": "Pendiente",
+        "confirmed": "Confirmado",
+        "preparing": "Preparando",
+        "ready": "Listo",
+        "served": "Servido"
+      }
+    },
+    "menu": {
+      "management": "Gestión del menú",
+      "subtitle": "Gestionar elementos del menú del restaurante",
+      "addItem": "Agregar ítem",
+      "noItems": "No hay ítems en esta categoría",
+      "itemActions": {
+        "edit": "Editar ítem",
+        "toggleAvailability": "Alternar disponibilidad"
+      }
+    }
+  },
+  "forms": {
+    "validation": {
+      "required": "Este campo es obligatorio",
+      "email": "Por favor, ingresa una dirección de email válida",
+      "minLength": "Debe tener al menos {{min}} caracteres",
+      "maxLength": "No debe superar los {{max}} caracteres"
+    },
+    "placeholders": {
+      "searchItems": "Buscar en el menú...",
+      "customerNotes": "Notas o solicitudes especiales del cliente...",
+      "itemDescription": "Ingresa la descripción del ítem..."
+    }
+  },
+  "errors": {
+    "generic": "Algo salió mal. Por favor, intenta de nuevo.",
+    "network": "Error de red. Por favor, revisa tu conexión.",
+    "notFound": "Recurso no encontrado.",
+    "unauthorized": "No estás autorizado para realizar esta acción.",
+    "serverError": "Error del servidor. Por favor, intenta más tarde."
+  },
+  "notifications": {
+    "orderPlaced": "¡Tu pedido ha sido realizado con éxito!",
+    "orderUpdated": "Pedido actualizado con éxito",
+    "orderCancelled": "El pedido ha sido cancelado",
+    "itemAdded": "Artículo agregado a la cuenta",
+    "itemRemoved": "Artículo eliminado de la cuenta",
+    "saveSuccess": "Cambios guardados con éxito",
+    "deleteSuccess": "Artículo eliminado con éxito"
+  },
+  "time": {
+    "justNow": "Justo ahora",
+    "minutesAgo": "hace {{count}} minuto",
+    "minutesAgo_plural": "hace {{count}} minutos",
+    "hoursAgo": "hace {{count}} hora",
+    "hoursAgo_plural": "hace {{count}} horas"
+  }
+}
