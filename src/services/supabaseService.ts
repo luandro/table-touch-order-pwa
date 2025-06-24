@@ -100,7 +100,18 @@ export const tablesService = {
       }
 
       // If still not found, create new table
-      const newTableNumber = !isNaN(tableNumber) ? tableNumber : Math.max(1, Math.floor(Math.random() * 1000));
+      // For non-numeric identifiers, find the next available table number to avoid conflicts
+      let newTableNumber = tableNumber;
+      if (isNaN(tableNumber)) {
+        const { data: existingTables } = await supabase
+          .from('tables')
+          .select('table_number')
+          .order('table_number', { ascending: false })
+          .limit(1);
+        
+        const maxTableNumber = existingTables?.[0]?.table_number || 0;
+        newTableNumber = maxTableNumber + 1;
+      }
 
       const { data, error } = await supabase
         .from('tables')
