@@ -156,7 +156,7 @@ export const menuService = {
   },
 
   async deleteMenuItem(id: string): Promise<MenuItem> {
-    // Soft delete: set active=false
+    // Hard delete - removes the record permanently
     const { data, error } = await supabase
       .from('menu_items')
       .delete()
