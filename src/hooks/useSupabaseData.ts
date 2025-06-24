@@ -468,30 +468,6 @@ export const useUpdateCategory = () => {
   });
 };
 
-export const useDeactivateCategory = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  return useMutation({
-    mutationFn: (id: string) => menuService.deactivateCategory(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['menu-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['all-menu-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['categories-with-count'] });
-      toast({
-        title: "Category Deactivated",
-        description: "Menu category has been deactivated successfully!",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to deactivate category",
-        variant: "destructive",
-      });
-    },
-  });
-};
 
 export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
@@ -505,7 +481,7 @@ export const useDeleteCategory = () => {
       queryClient.invalidateQueries({ queryKey: ['categories-with-count'] });
       toast({
         title: "Category Deleted",
-        description: "Menu category has been permanently removed!",
+        description: "Menu category has been removed successfully!",
       });
     },
     onError: (error: any) => {

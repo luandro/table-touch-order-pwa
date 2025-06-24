@@ -266,32 +266,20 @@ export const menuService = {
   },
 
   async getCategoriesWithItemCount(): Promise<(MenuCategory & { item_count: number })[]> {
-    // Get all categories first
-    const { data: categories, error: categoriesError } = await supabase
+    const { data, error } = await supabase
       .from('menu_categories')
-      .select('*')
+      .select(`
+        *,
+        menu_items(count)
+      `)
       .order('order_index');
 
-    if (categoriesError) throw categoriesError;
+    if (error) throw error;
 
-    // Get item counts for each category
-    const categoriesWithCounts = await Promise.all(
-      (categories || []).map(async (category) => {
-        const { count, error: countError } = await supabase
-          .from('menu_items')
-          .select('*', { count: 'exact', head: true })
-          .eq('category_id', category.id);
-
-        if (countError) throw countError;
-
-        return {
-          ...category,
-          item_count: count || 0
-        };
-      })
-    );
-
-    return categoriesWithCounts;
+    return (data || []).map(category => ({
+      ...category,
+      item_count: category.menu_items?.[0]?.count || 0
+    }));
   },
 
   async getCategoryById(id: string): Promise<MenuCategory | null> {
@@ -328,7 +316,7 @@ export const menuService = {
     return data;
   },
 
-  async deactivateCategory(id: string): Promise<MenuCategory> {
+  async deleteCategory(id: string): Promise<MenuCategory> {
     // Soft delete - set active to false
     const { data, error } = await supabase
       .from('menu_categories')
@@ -341,30 +329,19 @@ export const menuService = {
     return data;
   },
 
-  async deleteCategory(id: string): Promise<void> {
-    // Hard delete - removes the record permanently
-    const { error } = await supabase
-      .from('menu_categories')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  },
-
   async reorderCategories(categoryIds: string[]): Promise<void> {
-    // Use Promise.all for concurrent updates for better performance
-    const updates = categoryIds.map((id, index) => 
-      supabase
-        .from('menu_categories')
-        .update({ order_index: index })
-        .eq('id', id)
-    );
+    const updates = categoryIds.map((id, index) => ({
+      id,
+      order_index: index
+    }));
 
-    const results = await Promise.all(updates);
-    const errors = results.filter(result => result.error);
-    
-    if (errors.length > 0) {
-      throw new Error(`Failed to reorder categories: ${errors[0].error?.message}`);
+    for (const update of updates) {
+      const { error } = await supabase
+        .from('menu_categories')
+        .update({ order_index: update.order_index })
+        .eq('id', update.id);
+
+      if (error) throw error;
     }
   },
 

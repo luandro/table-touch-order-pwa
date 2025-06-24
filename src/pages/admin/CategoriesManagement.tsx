@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Plus, Edit, Trash2 } from 'lucide-react';
-import { useCategoriesWithItemCount, useDeactivateCategory, useUpdateCategory } from '@/hooks/useSupabaseData';
+import { ArrowLeft, Plus, Edit, Trash2, GripVertical } from 'lucide-react';
+import { useCategoriesWithItemCount, useDeleteCategory, useUpdateCategory, useReorderCategories } from '@/hooks/useSupabaseData';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import type { MenuCategory } from '@/types/supabase';
 
@@ -20,8 +20,9 @@ const CategoriesManagement = () => {
   const { data: categories = [], isLoading, error } = useCategoriesWithItemCount();
 
   // Mutations
-  const deactivateMutation = useDeactivateCategory();
+  const deleteMutation = useDeleteCategory();
   const updateMutation = useUpdateCategory();
+  const reorderMutation = useReorderCategories();
 
   // Handle delete with confirmation
   const handleDelete = (category: MenuCategory) => {
@@ -30,7 +31,7 @@ const CategoriesManagement = () => {
 
   const confirmDelete = () => {
     if (deleteDialog.category) {
-      deactivateMutation.mutate(deleteDialog.category.id);
+      deleteMutation.mutate(deleteDialog.category.id);
       setDeleteDialog({ open: false, category: null });
     }
   };
@@ -43,6 +44,12 @@ const CategoriesManagement = () => {
     });
   };
 
+  // TODO: Implement drag and drop reordering
+  // This would require adding a drag and drop library like @dnd-kit/core
+  const handleReorder = (draggedId: string, targetId: string) => {
+    // Implementation would go here
+    console.log('Reorder:', draggedId, 'to', targetId);
+  };
 
   // Loading state
   if (isLoading) {
@@ -126,6 +133,11 @@ const CategoriesManagement = () => {
               <Card key={category.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-4">
+                    {/* Drag Handle */}
+                    <div className="cursor-grab text-gray-400 hover:text-gray-600">
+                      <GripVertical className="w-5 h-5" />
+                    </div>
+
                     {/* Category Info */}
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
@@ -170,8 +182,8 @@ const CategoriesManagement = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleDelete(category)}
-                            title="Deactivate category"
-                            disabled={deactivateMutation.isPending}
+                            title="Delete category"
+                            disabled={deleteMutation.isPending}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -204,9 +216,9 @@ const CategoriesManagement = () => {
       <ConfirmationDialog
         open={deleteDialog.open}
         onOpenChange={(open) => setDeleteDialog({ open, category: null })}
-        title="Deactivate Category"
-        description={`Are you sure you want to deactivate "${deleteDialog.category?.name}"? This will hide the category but keep all menu items. This action can be undone by reactivating the category.`}
-        confirmText="Deactivate"
+        title="Delete Category"
+        description={`Are you sure you want to delete "${deleteDialog.category?.name}"? This will hide the category but keep all menu items. This action can be undone by reactivating the category.`}
+        confirmText="Delete"
         cancelText="Cancel"
         onConfirm={confirmDelete}
         variant="destructive"
