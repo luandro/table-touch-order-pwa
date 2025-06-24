@@ -16,24 +16,7 @@ Your `uploadMenuItemImage` function in `supabaseService.ts` creates a bucket cal
 
 ## Migration Files
 
-### 1. `20240124000000_create_menu_images_storage_policies.sql` (Recommended)
-
-This is the comprehensive migration that includes:
-- Creates the `menu-images` bucket with proper configuration
-- Restricts uploads to the `menu-items/` folder structure
-- Allows authenticated users to upload, update, and delete images
-- Allows public read access for displaying images in the app
-- Includes optional admin-only policies (commented out)
-
-**Features:**
-- ✅ Folder-based restrictions (`menu-items/` only)
-- ✅ File type restrictions (JPEG, PNG, WebP)
-- ✅ File size limit (5MB)
-- ✅ Public read access for image display
-- ✅ Authenticated user upload/management
-- ✅ Optional admin-only access patterns
-
-### 2. `20240124000001_simple_menu_images_storage_policies.sql` (Alternative)
+### 1. `20240124000001_simple_menu_images_storage_policies.sql` (Alternative)
 
 This is a simpler version that:
 - Creates the `menu-images` bucket
