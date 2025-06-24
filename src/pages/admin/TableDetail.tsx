@@ -1,37 +1,55 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, User, Clock, Receipt, QrCode } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, User, Clock, Receipt, QrCode, History, AlertTriangle } from 'lucide-react';
 import {
-  useTable,
+  useGetOrCreateTable,
   useOrdersByTable,
   useUpdateOrderStatus,
-  useUpdateTable,
+  useMarkTableFree,
+  useCreateReservation,
   useRealTimeOrders,
-  useRealTimeTables
+  useRealTimeTables,
+  useRestaurant
 } from '@/hooks/useSupabaseData';
+import { useLogOrderAction, useLogTableAction } from '@/hooks/useHistory';
 import { transformSupabaseOrder } from '@/utils/dataTransform';
 import { useToast } from '@/hooks/use-toast';
+import { qrCodeService } from '@/services/qrCodeService';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 const TableDetail = () => {
   const { tableId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Local state
+  const [reservationCustomerName, setReservationCustomerName] = useState('');
+  const [showReservationDialog, setShowReservationDialog] = useState(false);
+  const [showFreeTableDialog, setShowFreeTableDialog] = useState(false);
+  const [showCancelOrderDialog, setShowCancelOrderDialog] = useState<string | null>(null);
+
   // Enable real-time updates
   useRealTimeOrders();
   useRealTimeTables();
 
-  // Fetch real data from Supabase
-  const { data: table, isLoading: tableLoading } = useTable(tableId || '');
+  // Fetch real data from Supabase (auto-create table if doesn't exist)
+  const { data: table, isLoading: tableLoading } = useGetOrCreateTable(tableId || '');
   const { data: supabaseOrders = [], isLoading: ordersLoading } = useOrdersByTable(tableId || '');
+  const { data: restaurant } = useRestaurant();
 
   // Mutations for updating data
   const updateOrderStatus = useUpdateOrderStatus();
-  const updateTable = useUpdateTable();
+  const markTableFree = useMarkTableFree();
+  const createReservation = useCreateReservation();
+
+  // History logging hooks
+  const { logOrderConfirmed, logOrderCancelled } = useLogOrderAction();
+  const { logTableFreed, logTableReserved, logQrCodeGenerated } = useLogTableAction();
 
   // Transform orders for display
   const orders = supabaseOrders.map(order => transformSupabaseOrder(order));
@@ -86,45 +104,87 @@ const TableDetail = () => {
   const handleOrderStatusUpdate = async (orderId: string, newStatus: string) => {
     try {
       await updateOrderStatus.mutateAsync({ id: orderId, status: newStatus });
+
+      // Log action to history
+      if (newStatus === 'confirmed') {
+        await logOrderConfirmed(tableId!, orderId);
+      } else if (newStatus === 'cancelled') {
+        await logOrderCancelled(tableId!, orderId);
+      }
     } catch (error) {
       console.error('Failed to update order status:', error);
     }
   };
 
-  const handleTableStatusUpdate = async (newStatus: string) => {
-    try {
-      await updateTable.mutateAsync({
-        id: tableId!,
-        updates: { status: newStatus }
-      });
-    } catch (error) {
-      console.error('Failed to update table status:', error);
-    }
+  const handleConfirmOrder = (orderId: string) => {
+    handleOrderStatusUpdate(orderId, 'confirmed');
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    setShowCancelOrderDialog(null);
+    await handleOrderStatusUpdate(orderId, 'cancelled');
   };
 
   const handleMarkTableFree = async () => {
-    await handleTableStatusUpdate('available');
+    try {
+      setShowFreeTableDialog(false);
+      await markTableFree.mutateAsync(tableId!);
+      await logTableFreed(tableId!);
+    } catch (error) {
+      console.error('Failed to mark table free:', error);
+    }
   };
 
   const handleReserveTable = async () => {
-    await handleTableStatusUpdate('reserved');
+    if (!reservationCustomerName.trim()) {
+      toast({
+        title: "Customer Name Required",
+        description: "Please enter a customer name for the reservation",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setShowReservationDialog(false);
+      await createReservation.mutateAsync({
+        tableId: tableId!,
+        customerName: reservationCustomerName.trim()
+      });
+      await logTableReserved(tableId!, reservationCustomerName.trim());
+      setReservationCustomerName('');
+    } catch (error) {
+      console.error('Failed to reserve table:', error);
+    }
   };
 
-  const handleGenerateQRCode = () => {
-    const qrUrl = `${window.location.origin}/?table=${table.table_number}`;
-    navigator.clipboard.writeText(qrUrl);
-    toast({
-      title: "QR Code URL Copied",
-      description: "The table URL has been copied to your clipboard",
-    });
+  const handleGenerateQRCode = async () => {
+    try {
+      await qrCodeService.generatePDF({
+        tableId: tableId!,
+        tableNumber: table?.table_number || 0,
+        restaurantName: restaurant?.name,
+        restaurantLogo: restaurant?.logo_url || undefined,
+      });
+
+      await logQrCodeGenerated(tableId!);
+
+      toast({
+        title: "QR Code Generated",
+        description: "PDF QR code has been generated and should download shortly",
+      });
+    } catch (error) {
+      console.error('Failed to generate QR code:', error);
+      toast({
+        title: "QR Code Error",
+        description: error instanceof Error ? error.message : "Failed to generate QR code",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleViewHistory = () => {
-    // Navigate to order history page (to be implemented)
-    toast({
-      title: "Feature Coming Soon",
-      description: "Order history view will be available soon",
-    });
+    navigate(`/admin/table/${tableId}/history`);
   };
 
   // Filter active orders (not paid or cancelled)
@@ -220,34 +280,67 @@ const TableDetail = () => {
                     </div>
                     <div className="flex space-x-2 mt-3">
                       {order.status === 'pending' && (
-                        <Button
-                          size="sm"
-                          className="bg-green-500 hover:bg-green-600"
-                          onClick={() => handleOrderStatusUpdate(order.id, 'confirmed')}
-                          disabled={updateOrderStatus.isPending}
-                        >
-                          Confirm Order
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            className="bg-green-500 hover:bg-green-600"
+                            onClick={() => handleConfirmOrder(order.id)}
+                            disabled={updateOrderStatus.isPending}
+                          >
+                            Confirm Order
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowCancelOrderDialog(order.id)}
+                            disabled={updateOrderStatus.isPending}
+                            className="text-red-600 border-red-600 hover:bg-red-50"
+                          >
+                            Cancel Order
+                          </Button>
+                        </>
                       )}
                       {order.status === 'confirmed' && (
-                        <Button
-                          size="sm"
-                          className="bg-blue-500 hover:bg-blue-600"
-                          onClick={() => handleOrderStatusUpdate(order.id, 'preparing')}
-                          disabled={updateOrderStatus.isPending}
-                        >
-                          Start Preparing
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            className="bg-blue-500 hover:bg-blue-600"
+                            onClick={() => handleOrderStatusUpdate(order.id, 'preparing')}
+                            disabled={updateOrderStatus.isPending}
+                          >
+                            Start Preparing
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowCancelOrderDialog(order.id)}
+                            disabled={updateOrderStatus.isPending}
+                            className="text-red-600 border-red-600 hover:bg-red-50"
+                          >
+                            Cancel
+                          </Button>
+                        </>
                       )}
                       {order.status === 'preparing' && (
-                        <Button
-                          size="sm"
-                          className="bg-green-500 hover:bg-green-600"
-                          onClick={() => handleOrderStatusUpdate(order.id, 'ready')}
-                          disabled={updateOrderStatus.isPending}
-                        >
-                          Mark Ready
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            className="bg-green-500 hover:bg-green-600"
+                            onClick={() => handleOrderStatusUpdate(order.id, 'ready')}
+                            disabled={updateOrderStatus.isPending}
+                          >
+                            Mark Ready
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowCancelOrderDialog(order.id)}
+                            disabled={updateOrderStatus.isPending}
+                            className="text-red-600 border-red-600 hover:bg-red-50"
+                          >
+                            Cancel
+                          </Button>
+                        </>
                       )}
                       {order.status === 'ready' && (
                         <Button
@@ -259,14 +352,6 @@ const TableDetail = () => {
                           Mark Served
                         </Button>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleOrderStatusUpdate(order.id, 'cancelled')}
-                        disabled={updateOrderStatus.isPending}
-                      >
-                        Cancel Order
-                      </Button>
                     </div>
                   </div>
                 ))}
@@ -284,23 +369,33 @@ const TableDetail = () => {
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
-                onClick={handleMarkTableFree}
-                disabled={updateTable.isPending}
+                onClick={() => setShowFreeTableDialog(true)}
+                disabled={markTableFree.isPending}
+                className={activeOrders.length > 0 ? "text-red-600 border-red-600 hover:bg-red-50" : ""}
               >
-                Mark Table Free
+                {activeOrders.length > 0 ? (
+                  <>
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Mark Table Free
+                  </>
+                ) : (
+                  "Mark Table Free"
+                )}
               </Button>
               <Button
                 variant="outline"
-                onClick={handleReserveTable}
-                disabled={updateTable.isPending}
+                onClick={() => setShowReservationDialog(true)}
+                disabled={createReservation.isPending}
               >
                 Reserve Table
               </Button>
               <Button
                 variant="outline"
                 onClick={handleViewHistory}
+                className="flex items-center space-x-2"
               >
-                View History
+                <History className="w-4 h-4" />
+                <span>View History</span>
               </Button>
               <Button
                 variant="outline"
@@ -313,6 +408,58 @@ const TableDetail = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Confirmation Dialogs */}
+        <ConfirmationDialog
+          open={showFreeTableDialog}
+          onOpenChange={setShowFreeTableDialog}
+          title="Mark Table Free"
+          description={
+            activeOrders.length > 0
+              ? `This will cancel ${activeOrders.length} active order(s) and mark the table as free. This action cannot be undone.`
+              : "Are you sure you want to mark this table as free?"
+          }
+          confirmText="Mark Free"
+          cancelText="Keep Table"
+          variant={activeOrders.length > 0 ? "destructive" : "default"}
+          onConfirm={handleMarkTableFree}
+        />
+
+        <ConfirmationDialog
+          open={showReservationDialog}
+          onOpenChange={setShowReservationDialog}
+          title="Reserve Table"
+          description="Enter the customer name for this reservation:"
+          confirmText="Create Reservation"
+          cancelText="Cancel"
+          onConfirm={handleReserveTable}
+        >
+          <div className="mt-4">
+            <Input
+              placeholder="Customer name"
+              value={reservationCustomerName}
+              onChange={(e) => setReservationCustomerName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleReserveTable();
+                }
+              }}
+            />
+          </div>
+        </ConfirmationDialog>
+
+        {showCancelOrderDialog && (
+          <ConfirmationDialog
+            open={true}
+            onOpenChange={() => setShowCancelOrderDialog(null)}
+            title="Cancel Order"
+            description="Are you sure you want to cancel this order? This action cannot be undone."
+            confirmText="Cancel Order"
+            cancelText="Keep Order"
+            variant="destructive"
+            onConfirm={() => handleCancelOrder(showCancelOrderDialog)}
+          />
+        )}
       </div>
     </div>
   );

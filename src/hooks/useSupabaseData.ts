@@ -28,6 +28,22 @@ export const useTable = (tableId: string) => {
   });
 };
 
+export const useTableWithDetails = (tableId: string) => {
+  return useQuery({
+    queryKey: ['table-details', tableId],
+    queryFn: () => tablesService.getTableWithDetails(tableId),
+    enabled: !!tableId,
+  });
+};
+
+export const useGetOrCreateTable = (tableIdentifier: string) => {
+  return useQuery({
+    queryKey: ['table-or-create', tableIdentifier],
+    queryFn: () => tablesService.getOrCreateTable(tableIdentifier),
+    enabled: !!tableIdentifier,
+  });
+};
+
 export const useTableByNumber = (tableNumber: number, options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ['table-number', tableNumber],
@@ -178,6 +194,7 @@ export const useUpdateTable = () => {
       tablesService.updateTableStatus(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tables'] });
+      queryClient.invalidateQueries({ queryKey: ['table-details'] });
       toast({
         title: "Table Updated",
         description: "Table status has been updated successfully!",
@@ -187,6 +204,87 @@ export const useUpdateTable = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to update table",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useMarkTableFree = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (tableId: string) => tablesService.markTableFree(tableId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['tables'] });
+      queryClient.invalidateQueries({ queryKey: ['table-details'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast({
+        title: "Table Freed",
+        description: `Table marked as free. ${data.cancelledOrders.length} order(s) cancelled.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to mark table free",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useCreateReservation = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ tableId, customerName, notes }: { tableId: string; customerName: string; notes?: string }) =>
+      tablesService.createReservation(tableId, customerName, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tables'] });
+      queryClient.invalidateQueries({ queryKey: ['table-details'] });
+      toast({
+        title: "Reservation Created",
+        description: "Table has been reserved successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create reservation",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useDeleteTable = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (tableId: string) => tablesService.deleteTable(tableId),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['tables'] });
+      if (result.success) {
+        toast({
+          title: "Table Deleted",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "Cannot Delete Table",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete table",
         variant: "destructive",
       });
     },
