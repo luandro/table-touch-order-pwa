@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import MenuItemCard from '@/components/customer/MenuItemCard';
 import BillFloatingButton from '@/components/customer/BillFloatingButton';
@@ -11,12 +12,13 @@ import { MenuItem, BillItem } from '@/types';
 const Menu = () => {
   const { tableId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState('appetizers');
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
 
-  const customerName = localStorage.getItem('customerName') || 'Guest';
+  const customerName = localStorage.getItem('customerName') || t('common.labels.customer');
 
   const filteredItems = useMemo(() => {
     return menuItems.filter(item => item.category === activeCategory);
@@ -68,7 +70,7 @@ const Menu = () => {
         <div className="px-4 py-4">
           <h1 className="text-2xl font-bold text-orange-600 text-center">Bella Vista</h1>
           <p className="text-center text-gray-600">
-            Table {tableId} • {customerName}
+            {t('common.labels.table')} {tableId} • {customerName}
           </p>
         </div>
       </div>
@@ -84,7 +86,7 @@ const Menu = () => {
                 className="flex items-center space-x-2 whitespace-nowrap"
               >
                 <span>{category.icon}</span>
-                <span>{category.name}</span>
+                <span>{t(`customer.categories.${category.id}`)}</span>
               </TabsTrigger>
             ))}
           </TabsList>

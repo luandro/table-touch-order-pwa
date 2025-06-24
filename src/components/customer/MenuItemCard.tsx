@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Star } from 'lucide-react';
@@ -11,6 +12,8 @@ interface MenuItemCardProps {
 }
 
 const MenuItemCard = ({ item, onClick }: MenuItemCardProps) => {
+  const { t } = useTranslation();
+  
   return (
     <Card 
       className="cursor-pointer hover:shadow-lg transition-shadow duration-200 overflow-hidden"
@@ -24,7 +27,7 @@ const MenuItemCard = ({ item, onClick }: MenuItemCardProps) => {
         />
         {!item.available && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <Badge variant="destructive">Unavailable</Badge>
+            <Badge variant="destructive">{t('common.status.unavailable')}</Badge>
           </div>
         )}
       </div>
@@ -36,7 +39,7 @@ const MenuItemCard = ({ item, onClick }: MenuItemCardProps) => {
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
         <div className="flex items-center">
           <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-          <span className="ml-1 text-sm font-medium">{item.rating}</span>
+          <span className="ml-1 text-sm font-medium">{t('customer.menu.rating', { rating: item.rating })}</span>
         </div>
       </CardContent>
     </Card>

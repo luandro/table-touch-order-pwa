@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { Label } from '@/components/ui/label';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
 
@@ -19,7 +21,7 @@ const AdminLogin = () => {
       localStorage.setItem('adminAuth', 'true');
       navigate('/admin');
     } else {
-      setError('Invalid credentials. Use admin@bellavista.com / admin123');
+      setError(t('admin.login.invalidCredentials'));
     }
   };
 
@@ -30,42 +32,42 @@ const AdminLogin = () => {
           <div className="mx-auto w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-4">
             <span className="text-white text-2xl font-bold">BV</span>
           </div>
-          <CardTitle className="text-2xl text-orange-600">Bella Vista Admin</CardTitle>
-          <p className="text-gray-600">Sign in to manage restaurant</p>
+          <CardTitle className="text-2xl text-orange-600">{t('admin.login.title')}</CardTitle>
+          <p className="text-gray-600">{t('admin.login.subtitle')}</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('common.labels.email')}</Label>
               <Input
                 id="email"
                 type="email"
                 value={credentials.email}
                 onChange={(e) => setCredentials({...credentials, email: e.target.value})}
-                placeholder="admin@bellavista.com"
+                placeholder={t('admin.login.emailPlaceholder')}
                 required
               />
             </div>
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('common.labels.password')}</Label>
               <Input
                 id="password"
                 type="password"
                 value={credentials.password}
                 onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-                placeholder="Enter password"
+                placeholder={t('admin.login.passwordPlaceholder')}
                 required
               />
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
             <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600">
-              Sign In
+              {t('common.buttons.login')}
             </Button>
           </form>
           <div className="mt-4 p-3 bg-gray-100 rounded text-sm">
-            <p className="font-medium">Demo Credentials:</p>
-            <p>Email: admin@bellavista.com</p>
-            <p>Password: admin123</p>
+            <p className="font-medium">{t('admin.login.demoCredentials')}</p>
+            <p>{t('admin.login.demoEmail')}</p>
+            <p>{t('admin.login.demoPassword')}</p>
           </div>
         </CardContent>
       </Card>

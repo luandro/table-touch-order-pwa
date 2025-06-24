@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,13 +13,14 @@ interface NameInputModalProps {
 }
 
 const NameInputModal = ({ isOpen, tableNumber, onSubmit }: NameInputModalProps) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim().length < 2) {
-      setError('Please enter a valid name (at least 2 characters)');
+      setError(t('customer.form.nameRequired'));
       return;
     }
     onSubmit(name.trim());
@@ -29,18 +31,18 @@ const NameInputModal = ({ isOpen, tableNumber, onSubmit }: NameInputModalProps) 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold text-orange-600">
-            Welcome to Bella Vista
+            {t('customer.welcome.title', { restaurantName: 'Bella Vista' })}
           </DialogTitle>
         </DialogHeader>
         <div className="text-center mb-6">
-          <p className="text-gray-600">Table {tableNumber}</p>
+          <p className="text-gray-600">{t('customer.welcome.tableNumber', { number: tableNumber })}</p>
           <p className="text-sm text-gray-500 mt-2">
-            Please enter your name to start your order
+            {t('customer.welcome.subtitle')}
           </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="customerName">Your Name</Label>
+            <Label htmlFor="customerName">{t('customer.form.nameLabel')}</Label>
             <Input
               id="customerName"
               value={name}
@@ -48,7 +50,7 @@ const NameInputModal = ({ isOpen, tableNumber, onSubmit }: NameInputModalProps) 
                 setName(e.target.value);
                 setError('');
               }}
-              placeholder="Enter your name"
+              placeholder={t('customer.form.namePlaceholder')}
               className="mt-1"
             />
             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
@@ -58,7 +60,7 @@ const NameInputModal = ({ isOpen, tableNumber, onSubmit }: NameInputModalProps) 
             className="w-full bg-orange-500 hover:bg-orange-600"
             size="lg"
           >
-            Start Order
+            {t('customer.welcome.startOrder')}
           </Button>
         </form>
       </DialogContent>

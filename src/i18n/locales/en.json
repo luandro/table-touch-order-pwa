@@ -1,0 +1,228 @@
+
+{
+  "common": {
+    "buttons": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "add": "Add",
+      "confirm": "Confirm",
+      "back": "Back",
+      "continue": "Continue",
+      "submit": "Submit",
+      "close": "Close",
+      "login": "Sign In",
+      "logout": "Logout",
+      "view": "View",
+      "update": "Update",
+      "remove": "Remove",
+      "clear": "Clear"
+    },
+    "labels": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "password": "Password",
+      "total": "Total",
+      "subtotal": "Subtotal",
+      "quantity": "Quantity",
+      "price": "Price",
+      "status": "Status",
+      "table": "Table",
+      "time": "Time",
+      "date": "Date",
+      "notes": "Notes",
+      "customer": "Customer",
+      "order": "Order",
+      "rating": "Rating"
+    },
+    "status": {
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success",
+      "pending": "Pending",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "active": "Active",
+      "available": "Available",
+      "unavailable": "Unavailable"
+    },
+    "actions": {
+      "addToCart": "Add to Cart",
+      "viewDetails": "View Details",
+      "placeOrder": "Place Order",
+      "markReady": "Mark Ready",
+      "markServed": "Mark Served"
+    }
+  },
+  "navigation": {
+    "home": "Home",
+    "menu": "Menu",
+    "orders": "Orders",
+    "tables": "Tables",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "admin": "Admin",
+    "management": "Management"
+  },
+  "customer": {
+    "welcome": {
+      "title": "Welcome to {{restaurantName}}",
+      "subtitle": "Please enter your name to start your order",
+      "tableNumber": "Table {{number}}",
+      "loading": "Loading your table...",
+      "startOrder": "Start Order"
+    },
+    "menu": {
+      "title": "Menu",
+      "categories": "Categories",
+      "items": "Items",
+      "addToBill": "Add to Bill",
+      "viewBill": "View Bill",
+      "itemCount": "{{count}} item",
+      "itemCount_plural": "{{count}} items",
+      "specialInstructions": "Special Instructions (Optional)",
+      "specialInstructionsPlaceholder": "Any special requests or allergies...",
+      "addToBillWithPrice": "Add to Bill - ${{price}}",
+      "rating": "Rating: {{rating}}/5"
+    },
+    "categories": {
+      "appetizers": "Appetizers",
+      "mains": "Main Dishes",
+      "desserts": "Desserts",
+      "beverages": "Beverages",
+      "salads": "Salads",
+      "soups": "Soups"
+    },
+    "bill": {
+      "title": "Your Bill",
+      "empty": "No items in your bill",
+      "customerInfo": "Customer Information",
+      "orderItems": "Order Items",
+      "eachPrice": "${{price}} each",
+      "itemNote": "Note: {{note}}",
+      "placeOrder": "Place Order",
+      "continueEditing": "Continue Editing Order"
+    },
+    "order": {
+      "placed": "Order placed successfully!",
+      "confirmation": "Order Confirmation",
+      "details": "Order Details",
+      "notFound": "Order Not Found",
+      "notFoundMessage": "The order ID you're looking for doesn't exist.",
+      "orderNumber": "Order #{{orderId}}"
+    },
+    "form": {
+      "enterName": "Enter your name",
+      "nameRequired": "Please enter a valid name (at least 2 characters)",
+      "nameLabel": "Your Name",
+      "namePlaceholder": "Enter your name"
+    }
+  },
+  "admin": {
+    "login": {
+      "title": "Bella Vista Admin",
+      "subtitle": "Sign in to manage restaurant",
+      "emailPlaceholder": "admin@bellavista.com",
+      "passwordPlaceholder": "Enter password",
+      "invalidCredentials": "Invalid credentials. Use admin@bellavista.com / admin123",
+      "demoCredentials": "Demo Credentials:",
+      "demoEmail": "Email: admin@bellavista.com",
+      "demoPassword": "Password: admin123"
+    },
+    "dashboard": {
+      "title": "Bella Vista Admin",
+      "subtitle": "Restaurant Management Dashboard",
+      "newOrdersAlert": "{{count}} new order waiting for confirmation",
+      "newOrdersAlert_plural": "{{count}} new orders waiting for confirmation",
+      "stats": {
+        "occupiedTables": "Occupied Tables",
+        "pendingOrders": "Pending Orders",
+        "activeOrders": "Active Orders",
+        "totalTables": "Total Tables"
+      },
+      "tablesOverview": "Tables Overview",
+      "viewOrders": "View Orders",
+      "manageMenu": "Manage Menu"
+    },
+    "tables": {
+      "status": {
+        "free": "Free",
+        "occupied": "Occupied",
+        "pending": "Pending",
+        "reserved": "Reserved"
+      },
+      "tableNumber": "Table {{number}}",
+      "tableManagement": "Table Management",
+      "tableInfo": "Table Information",
+      "lastActivity": "Last Activity",
+      "currentOrders": "Current Orders",
+      "noOrders": "No orders for this table",
+      "actions": {
+        "markFree": "Mark Table Free",
+        "reserve": "Reserve Table",
+        "viewHistory": "View History",
+        "generateQR": "Generate QR Code"
+      }
+    },
+    "orders": {
+      "orderNumber": "Order #{{id}}",
+      "confirmOrder": "Confirm Order",
+      "cancelOrder": "Cancel Order",
+      "status": {
+        "pending": "Pending",
+        "confirmed": "Confirmed", 
+        "preparing": "Preparing",
+        "ready": "Ready",
+        "served": "Served"
+      }
+    },
+    "menu": {
+      "management": "Menu Management",
+      "subtitle": "Manage restaurant menu items",
+      "addItem": "Add Item",
+      "noItems": "No items in this category",
+      "itemActions": {
+        "edit": "Edit Item",
+        "toggleAvailability": "Toggle Availability"
+      }
+    }
+  },
+  "forms": {
+    "validation": {
+      "required": "This field is required",
+      "email": "Please enter a valid email address",
+      "minLength": "Must be at least {{min}} characters",
+      "maxLength": "Must be no more than {{max}} characters"
+    },
+    "placeholders": {
+      "searchItems": "Search menu items...",
+      "customerNotes": "Customer notes or special requests...",
+      "itemDescription": "Enter item description..."
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "notFound": "The requested resource was not found.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "serverError": "Server error. Please try again later."
+  },
+  "notifications": {
+    "orderPlaced": "Your order has been placed successfully!",
+    "orderUpdated": "Order updated successfully",
+    "orderCancelled": "Order has been cancelled",
+    "itemAdded": "Item added to bill",
+    "itemRemoved": "Item removed from bill",
+    "saveSuccess": "Changes saved successfully",
+    "deleteSuccess": "Item deleted successfully"
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} minute ago",
+    "minutesAgo_plural": "{{count}} minutes ago",
+    "hoursAgo": "{{count}} hour ago", 
+    "hoursAgo_plural": "{{count}} hours ago"
+  }
+}

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { Users, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const stats = {
     totalTables: tables.length,
@@ -33,11 +35,11 @@ const AdminDashboard = () => {
       <div className="bg-white shadow-sm">
         <div className="px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-orange-600">Bella Vista Admin</h1>
-            <p className="text-gray-600">Restaurant Management Dashboard</p>
+            <h1 className="text-2xl font-bold text-orange-600">{t('admin.dashboard.title')}</h1>
+            <p className="text-gray-600">{t('admin.dashboard.subtitle')}</p>
           </div>
           <Button variant="outline" onClick={handleLogout}>
-            Logout
+            {t('common.buttons.logout')}
           </Button>
         </div>
       </div>
@@ -50,7 +52,7 @@ const AdminDashboard = () => {
               <div className="flex items-center space-x-2">
                 <AlertCircle className="w-5 h-5 text-orange-600" />
                 <span className="font-medium text-orange-800">
-                  {stats.pendingOrders} new order{stats.pendingOrders > 1 ? 's' : ''} waiting for confirmation
+                  {t('admin.dashboard.newOrdersAlert', { count: stats.pendingOrders })}
                 </span>
               </div>
             </CardContent>
@@ -65,7 +67,7 @@ const AdminDashboard = () => {
                 <Users className="w-5 h-5 text-blue-600" />
                 <div>
                   <p className="text-2xl font-bold">{stats.occupiedTables}</p>
-                  <p className="text-sm text-gray-600">Occupied Tables</p>
+                  <p className="text-sm text-gray-600">{t('admin.dashboard.stats.occupiedTables')}</p>
                 </div>
               </div>
             </CardContent>
@@ -77,7 +79,7 @@ const AdminDashboard = () => {
                 <Clock className="w-5 h-5 text-yellow-600" />
                 <div>
                   <p className="text-2xl font-bold">{stats.pendingOrders}</p>
-                  <p className="text-sm text-gray-600">Pending Orders</p>
+                  <p className="text-sm text-gray-600">{t('admin.dashboard.stats.pendingOrders')}</p>
                 </div>
               </div>
             </CardContent>
@@ -89,7 +91,7 @@ const AdminDashboard = () => {
                 <CheckCircle className="w-5 h-5 text-green-600" />
                 <div>
                   <p className="text-2xl font-bold">{stats.activeOrders}</p>
-                  <p className="text-sm text-gray-600">Active Orders</p>
+                  <p className="text-sm text-gray-600">{t('admin.dashboard.stats.activeOrders')}</p>
                 </div>
               </div>
             </CardContent>
@@ -101,7 +103,7 @@ const AdminDashboard = () => {
                 <Users className="w-5 h-5 text-gray-600" />
                 <div>
                   <p className="text-2xl font-bold">{stats.totalTables}</p>
-                  <p className="text-sm text-gray-600">Total Tables</p>
+                  <p className="text-sm text-gray-600">{t('admin.dashboard.stats.totalTables')}</p>
                 </div>
               </div>
             </CardContent>
@@ -111,21 +113,21 @@ const AdminDashboard = () => {
         {/* Tables Grid */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Tables Overview</CardTitle>
+            <CardTitle>{t('admin.dashboard.tablesOverview')}</CardTitle>
             <div className="flex space-x-2">
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => navigate('/admin/orders')}
               >
-                View Orders
+                {t('admin.dashboard.viewOrders')}
               </Button>
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => navigate('/admin/menu')}
               >
-                Manage Menu
+                {t('admin.dashboard.manageMenu')}
               </Button>
             </div>
           </CardHeader>

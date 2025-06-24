@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table } from '@/types';
@@ -10,6 +11,8 @@ interface TableCardProps {
 }
 
 const TableCard = ({ table, onClick }: TableCardProps) => {
+  const { t } = useTranslation();
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'occupied': return 'bg-red-100 border-red-300 text-red-800';
@@ -21,10 +24,10 @@ const TableCard = ({ table, onClick }: TableCardProps) => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'occupied': return <Badge variant="destructive">Occupied</Badge>;
-      case 'pending': return <Badge className="bg-yellow-500">Pending</Badge>;
-      case 'reserved': return <Badge className="bg-blue-500">Reserved</Badge>;
-      default: return <Badge className="bg-green-500">Free</Badge>;
+      case 'occupied': return <Badge variant="destructive">{t('admin.tables.status.occupied')}</Badge>;
+      case 'pending': return <Badge className="bg-yellow-500">{t('admin.tables.status.pending')}</Badge>;
+      case 'reserved': return <Badge className="bg-blue-500">{t('admin.tables.status.reserved')}</Badge>;
+      default: return <Badge className="bg-green-500">{t('admin.tables.status.free')}</Badge>;
     }
   };
 
@@ -35,7 +38,7 @@ const TableCard = ({ table, onClick }: TableCardProps) => {
     >
       <CardHeader className="pb-2">
         <CardTitle className="text-center text-2xl">
-          Table {table.id}
+          {t('admin.tables.tableNumber', { number: table.id })}
         </CardTitle>
       </CardHeader>
       <CardContent className="text-center">

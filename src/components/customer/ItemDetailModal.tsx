@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +16,7 @@ interface ItemDetailModalProps {
 }
 
 const ItemDetailModal = ({ item, isOpen, onClose, onAddToBill }: ItemDetailModalProps) => {
+  const { t } = useTranslation();
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState('');
 
@@ -54,10 +56,10 @@ const ItemDetailModal = ({ item, isOpen, onClose, onAddToBill }: ItemDetailModal
           <p className="text-gray-600">{item.description}</p>
           
           <div className="space-y-2">
-            <Label htmlFor="notes">Special Instructions (Optional)</Label>
+            <Label htmlFor="notes">{t('customer.menu.specialInstructions')}</Label>
             <Textarea
               id="notes"
-              placeholder="Any special requests or allergies..."
+              placeholder={t('customer.menu.specialInstructionsPlaceholder')}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -65,7 +67,7 @@ const ItemDetailModal = ({ item, isOpen, onClose, onAddToBill }: ItemDetailModal
           </div>
           
           <div className="flex items-center justify-between">
-            <span className="font-medium">Quantity:</span>
+            <span className="font-medium">{t('common.labels.quantity')}:</span>
             <div className="flex items-center space-x-3">
               <Button
                 variant="outline"
@@ -92,14 +94,14 @@ const ItemDetailModal = ({ item, isOpen, onClose, onAddToBill }: ItemDetailModal
               onClick={onClose}
               className="flex-1"
             >
-              Cancel
+              {t('common.buttons.cancel')}
             </Button>
             <Button 
               onClick={handleAddToBill}
               className="flex-1 bg-orange-500 hover:bg-orange-600"
               disabled={!item.available}
             >
-              Add to Bill - ${(item.price * quantity).toFixed(2)}
+              {t('customer.menu.addToBillWithPrice', { price: (item.price * quantity).toFixed(2) })}
             </Button>
           </div>
         </div>

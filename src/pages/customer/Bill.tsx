@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,7 @@ import { BillItem } from '@/types';
 const Bill = () => {
   const { tableId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [customerName, setCustomerName] = useState('');
 
@@ -43,7 +45,7 @@ const Bill = () => {
 
   const handlePlaceOrder = () => {
     // In real app, this would submit the order
-    alert('Order placed successfully!');
+    alert(t('customer.order.placed'));
     localStorage.removeItem('billItems');
     navigate(`/table/${tableId}`);
   };
@@ -62,8 +64,8 @@ const Bill = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-orange-600">Your Bill</h1>
-            <p className="text-gray-600">Table {tableId}</p>
+            <h1 className="text-xl font-bold text-orange-600">{t('customer.bill.title')}</h1>
+            <p className="text-gray-600">{t('common.labels.table')} {tableId}</p>
           </div>
         </div>
       </div>
@@ -72,11 +74,11 @@ const Bill = () => {
         {/* Customer Info */}
         <Card>
           <CardHeader>
-            <CardTitle>Customer Information</CardTitle>
+            <CardTitle>{t('customer.bill.customerInfo')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="customerName">Name</Label>
+              <Label htmlFor="customerName">{t('common.labels.name')}</Label>
               <Input
                 id="customerName"
                 value={customerName}
@@ -84,7 +86,7 @@ const Bill = () => {
                   setCustomerName(e.target.value);
                   localStorage.setItem('customerName', e.target.value);
                 }}
-                placeholder="Enter your name"
+                placeholder={t('customer.form.namePlaceholder')}
               />
             </div>
           </CardContent>
@@ -93,11 +95,11 @@ const Bill = () => {
         {/* Bill Items */}
         <Card>
           <CardHeader>
-            <CardTitle>Order Items</CardTitle>
+            <CardTitle>{t('customer.bill.orderItems')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {billItems.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No items in your bill</p>
+              <p className="text-gray-500 text-center py-8">{t('customer.bill.empty')}</p>
             ) : (
               billItems.map(item => (
                 <div key={item.id} className="flex items-center space-x-4 py-3 border-b last:border-b-0">
@@ -108,9 +110,9 @@ const Bill = () => {
                   />
                   <div className="flex-1">
                     <h3 className="font-medium">{item.menuItem.name}</h3>
-                    <p className="text-sm text-gray-600">${item.menuItem.price.toFixed(2)} each</p>
+                    <p className="text-sm text-gray-600">{t('customer.bill.eachPrice', { price: item.menuItem.price.toFixed(2) })}</p>
                     {item.notes && (
-                      <p className="text-sm text-gray-500 italic">Note: {item.notes}</p>
+                      <p className="text-sm text-gray-500 italic">{t('customer.bill.itemNote', { note: item.notes })}</p>
                     )}
                   </div>
                   <div className="flex items-center space-x-2">
@@ -145,11 +147,11 @@ const Bill = () => {
             <CardContent className="pt-6">
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span>Subtotal:</span>
+                  <span>{t('common.labels.subtotal')}:</span>
                   <span>${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
-                  <span>Total:</span>
+                  <span>{t('common.labels.total')}:</span>
                   <span className="text-orange-600">${total.toFixed(2)}</span>
                 </div>
               </div>
@@ -159,7 +161,7 @@ const Bill = () => {
                 size="lg"
                 disabled={billItems.length === 0 || !customerName.trim()}
               >
-                Place Order
+                {t('customer.bill.placeOrder')}
               </Button>
             </CardContent>
           </Card>
