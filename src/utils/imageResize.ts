@@ -81,6 +81,15 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
       error: 'File size must be less than 5MB'
     };
   }
+  // Additional validation: Check file extension matches MIME type
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  const validExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+  if (!extension || !validExtensions.includes(extension)) {
+    return {
+      valid: false,
+      error: 'Invalid file extension'
+    };
+  }
 
   return { valid: true };
 }
