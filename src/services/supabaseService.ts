@@ -83,6 +83,162 @@ export const tablesService = {
 
     if (error) throw error;
     return data;
+  },
+
+  // Auto-create table if it doesn't exist
+  async getOrCreateTable(tableIdentifier: string): Promise<Table> {
+    try {
+      // First try to get table by ID
+      let table = await this.getTableById(tableIdentifier);
+      if (table) return table;
+
+      // If not found by ID, try by table number if it's numeric
+      const tableNumber = parseInt(tableIdentifier);
+      if (!isNaN(tableNumber)) {
+        table = await this.getTableByNumber(tableNumber);
+        if (table) return table;
+      }
+
+      // If still not found, create new table
+      // For non-numeric identifiers, find the next available table number to avoid conflicts
+      let newTableNumber = tableNumber;
+      if (isNaN(tableNumber)) {
+        const { data: existingTables } = await supabase
+          .from('tables')
+          .select('table_number')
+          .order('table_number', { ascending: false })
+          .limit(1);
+        
+        const maxTableNumber = existingTables?.[0]?.table_number || 0;
+        newTableNumber = maxTableNumber + 1;
+      }
+
+      const { data, error } = await supabase
+        .from('tables')
+        .insert({
+          table_number: newTableNumber,
+          status: 'available',
+          mode: 'customer_order'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+
+    } catch (error) {
+      console.error('Error in getOrCreateTable:', error);
+      throw error;
+    }
+  },
+
+  // Get table with current customer info from active orders
+  async getTableWithDetails(tableId: string): Promise<Table & { currentCustomer?: string; lastActivity?: string }> {
+    const table = await this.getTableById(tableId);
+    if (!table) throw new Error('Table not found');
+
+    // Get current customer from active orders
+    const { data: orders } = await supabase
+      .from('orders')
+      .select('bill_name, created_at, updated_at')
+      .eq('table_id', tableId)
+      .not('status', 'in', '(paid,cancelled)')
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    const currentOrder = orders?.[0];
+    const lastActivity = currentOrder?.updated_at || currentOrder?.created_at || table.created_at;
+
+    return {
+      ...table,
+      currentCustomer: currentOrder?.bill_name || undefined,
+      lastActivity: lastActivity || undefined
+    };
+  },
+
+  // Mark table as free and cancel all active orders
+  async markTableFree(tableId: string): Promise<{ table: Table; cancelledOrders: Order[] }> {
+    // Get all active orders for the table
+    const { data: activeOrders } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('table_id', tableId)
+      .not('status', 'in', '(paid,cancelled)');
+
+    // Cancel all active orders in a single batch operation
+    const cancelledOrders: Order[] = [];
+    if (activeOrders && activeOrders.length > 0) {
+      const orderIds = activeOrders.map(order => order.id);
+      
+      const { data: updatedOrders } = await supabase
+        .from('orders')
+        .update({
+          status: 'cancelled',
+          updated_at: new Date().toISOString()
+        })
+        .in('id', orderIds)
+        .select();
+
+      if (updatedOrders) {
+        cancelledOrders.push(...updatedOrders);
+      }
+    }
+
+    // Update table status to available
+    const table = await this.updateTableStatus(tableId, {
+      status: 'available'
+    });
+
+    return { table, cancelledOrders };
+  },
+
+  // Create table reservation
+  async createReservation(tableId: string, customerName: string, notes?: string): Promise<Table> {
+    const table = await this.updateTableStatus(tableId, {
+      status: 'reserved'
+    });
+
+    // Could extend this to create a separate reservations table if needed
+    return table;
+  },
+
+  // Delete table (with confirmation)
+  async deleteTable(tableId: string): Promise<{ success: boolean; message: string }> {
+    try {
+      // Check for active orders
+      const { data: activeOrders } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('table_id', tableId)
+        .not('status', 'in', '(paid,cancelled)');
+
+      if (activeOrders && activeOrders.length > 0) {
+        return {
+          success: false,
+          message: `Cannot delete table with ${activeOrders.length} active order(s). Please complete or cancel all orders first.`
+        };
+      }
+
+      // Delete the table (cascade will handle related records)
+      const { error } = await supabase
+        .from('tables')
+        .delete()
+        .eq('id', tableId);
+
+      if (error) throw error;
+
+      return {
+        success: true,
+        message: 'Table deleted successfully'
+      };
+
+    } catch (error) {
+      console.error('Error deleting table:', error);
+      return {
+        success: false,
+        message: 'Failed to delete table'
+      };
+    }
   }
 };
 
@@ -110,32 +266,20 @@ export const menuService = {
   },
 
   async getCategoriesWithItemCount(): Promise<(MenuCategory & { item_count: number })[]> {
-    // Get all categories first
-    const { data: categories, error: categoriesError } = await supabase
+    const { data, error } = await supabase
       .from('menu_categories')
-      .select('*')
+      .select(`
+        *,
+        menu_items(count)
+      `)
       .order('order_index');
 
-    if (categoriesError) throw categoriesError;
+    if (error) throw error;
 
-    // Get item counts for each category
-    const categoriesWithCounts = await Promise.all(
-      (categories || []).map(async (category) => {
-        const { count, error: countError } = await supabase
-          .from('menu_items')
-          .select('*', { count: 'exact', head: true })
-          .eq('category_id', category.id);
-
-        if (countError) throw countError;
-
-        return {
-          ...category,
-          item_count: count || 0
-        };
-      })
-    );
-
-    return categoriesWithCounts;
+    return (data || []).map(category => ({
+      ...category,
+      item_count: category.menu_items?.[0]?.count || 0
+    }));
   },
 
   async getCategoryById(id: string): Promise<MenuCategory | null> {
@@ -172,7 +316,7 @@ export const menuService = {
     return data;
   },
 
-  async deactivateCategory(id: string): Promise<MenuCategory> {
+  async deleteCategory(id: string): Promise<MenuCategory> {
     // Soft delete - set active to false
     const { data, error } = await supabase
       .from('menu_categories')
@@ -185,30 +329,19 @@ export const menuService = {
     return data;
   },
 
-  async deleteCategory(id: string): Promise<void> {
-    // Hard delete - removes the record permanently
-    const { error } = await supabase
-      .from('menu_categories')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  },
-
   async reorderCategories(categoryIds: string[]): Promise<void> {
-    // Use Promise.all for concurrent updates for better performance
-    const updates = categoryIds.map((id, index) => 
-      supabase
-        .from('menu_categories')
-        .update({ order_index: index })
-        .eq('id', id)
-    );
+    const updates = categoryIds.map((id, index) => ({
+      id,
+      order_index: index
+    }));
 
-    const results = await Promise.all(updates);
-    const errors = results.filter(result => result.error);
-    
-    if (errors.length > 0) {
-      throw new Error(`Failed to reorder categories: ${errors[0].error?.message}`);
+    for (const update of updates) {
+      const { error } = await supabase
+        .from('menu_categories')
+        .update({ order_index: update.order_index })
+        .eq('id', update.id);
+
+      if (error) throw error;
     }
   },
 

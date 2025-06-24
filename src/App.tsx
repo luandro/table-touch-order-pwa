@@ -16,6 +16,7 @@ import ExistingOrder from "./pages/customer/ExistingOrder";
 import AdminLogin from "./pages/admin/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import TableDetail from "./pages/admin/TableDetail";
+import TableHistory from "./pages/admin/TableHistory";
 import MenuManagement from "./pages/admin/MenuManagement";
 import MenuItemForm from "./pages/admin/MenuItemForm";
 import CategoriesManagement from "./pages/admin/CategoriesManagement";
@@ -73,6 +74,14 @@ const AppContent = () => (
       element={
         <ProtectedAdminRoute>
           <TableDetail />
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="/admin/table/:tableId/history"
+      element={
+        <ProtectedAdminRoute>
+          <TableHistory />
         </ProtectedAdminRoute>
       }
     />

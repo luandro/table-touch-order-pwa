@@ -180,6 +180,51 @@ export type Database = {
           },
         ]
       }
+      table_history: {
+        Row: {
+          id: string
+          table_id: string | null
+          action: string
+          details: Json | null
+          admin_user_id: string | null
+          order_id: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          id?: string
+          table_id?: string | null
+          action: string
+          details?: Json | null
+          admin_user_id?: string | null
+          order_id?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          id?: string
+          table_id?: string | null
+          action?: string
+          details?: Json | null
+          admin_user_id?: string | null
+          order_id?: string | null
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "table_history_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "table_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       restaurants: {
         Row: {
           created_at: string | null
