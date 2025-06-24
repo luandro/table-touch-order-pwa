@@ -6,28 +6,57 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import TableCard from '@/components/admin/TableCard';
-import { tables, sampleOrders } from '@/data/mockData';
+import { useTables, useOrders, useRealTimeOrders, useRealTimeTables } from '@/hooks/useSupabaseData';
+import { useAuth } from '@/hooks/useAuth';
+import { transformSupabaseTable } from '@/utils/dataTransform';
 import { Users, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { signOut } = useAuth();
+  
+  // Fetch data from Supabase
+  const { data: supabaseTables = [], isLoading: tablesLoading } = useTables();
+  const { data: supabaseOrders = [], isLoading: ordersLoading } = useOrders();
+  
+  // Enable real-time updates
+  useRealTimeOrders();
+  useRealTimeTables();
 
+  // Transform data for frontend use
+  const tables = supabaseTables.map(transformSupabaseTable);
+  
   const stats = {
     totalTables: tables.length,
-    occupiedTables: tables.filter(t => t.status === 'occupied').length,
-    pendingOrders: sampleOrders.filter(o => o.status === 'pending').length,
-    activeOrders: sampleOrders.length
+    occupiedTables: supabaseTables.filter(t => t.status === 'occupied').length,
+    pendingOrders: supabaseOrders.filter(o => o.status === 'pending').length,
+    activeOrders: supabaseOrders.filter(o => !['paid', 'cancelled'].includes(o.status || '')).length
   };
 
   const handleTableClick = (tableId: number) => {
-    navigate(`/admin/table/${tableId}`);
+    // Find the actual Supabase table ID for this table number
+    const supabaseTable = supabaseTables.find(t => t.table_number === tableId);
+    if (supabaseTable) {
+      navigate(`/admin/table/${supabaseTable.id}`);
+    }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
+  const handleLogout = async () => {
+    await signOut();
     navigate('/admin/login');
   };
+
+  if (tablesLoading || ordersLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
