@@ -18,12 +18,11 @@ CREATE INDEX IF NOT EXISTS idx_table_history_action ON table_history(action);
 ALTER TABLE table_history ENABLE ROW LEVEL SECURITY;
 
 -- Policy for authenticated users to read all history
-CREATE POLICY "Anyone can read table history" ON table_history
-    FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can read table history" ON table_history
+    FOR SELECT USING (auth.role() = 'authenticated');
 
--- Policy for authenticated users to insert history
-CREATE POLICY "Anyone can insert table history" ON table_history
-    FOR INSERT WITH CHECK (true);
+CREATE POLICY "Authenticated users can insert table history" ON table_history
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- Add comment for documentation
 COMMENT ON TABLE table_history IS 'Tracks all actions performed on tables for audit and history purposes';
