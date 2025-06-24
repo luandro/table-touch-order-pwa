@@ -1,26 +1,79 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ArrowLeft, Plus, Edit, Eye, EyeOff } from 'lucide-react';
-import { menuItems, categories } from '@/data/mockData';
+import { useMenuCategories, useMenuItems } from '@/hooks/useSupabaseData';
+import type { MenuCategory as SupabaseMenuCategory, MenuItem as SupabaseMenuItem } from '@/types/supabase';
 
 const MenuManagement = () => {
   const navigate = useNavigate();
-  const [activeCategory, setActiveCategory] = useState('appetizers');
+  const [activeCategory, setActiveCategory] = useState<string>('');
 
-  const filteredItems = menuItems.filter(item => item.category === activeCategory);
+  // Fetch data from Supabase
+  const { data: supabaseCategories = [], isLoading: loadingCategories, error: categoriesError } = useMenuCategories();
+  const { data: supabaseMenuItems = [], isLoading: loadingItems, error: itemsError } = useMenuItems();
+
+  // Transform categories for display
+  const categories = useMemo(() => {
+    return supabaseCategories.map((cat: SupabaseMenuCategory) => ({
+      id: cat.id,
+      name: cat.name,
+      icon: '🍽️' // Default icon
+    }));
+  }, [supabaseCategories]);
+
+  // Set default category when categories load
+  useEffect(() => {
+    if (categories.length > 0 && !activeCategory) {
+      setActiveCategory(categories[0].id);
+    }
+  }, [categories, activeCategory]);
+
+  // Filter items by active category
+  const filteredItems = useMemo(() => {
+    return supabaseMenuItems.filter((item: SupabaseMenuItem) => item.category_id === activeCategory);
+  }, [supabaseMenuItems, activeCategory]);
+
+  // Loading state
+  if (loadingCategories || loadingItems) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading menu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (categoriesError || itemsError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">Failed to load menu data</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm">
         <div className="px-4 py-4 flex items-center justify-between">
           <div className="flex items-center">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => navigate('/admin')}
               className="mr-3"
@@ -43,8 +96,8 @@ const MenuManagement = () => {
         <Tabs value={activeCategory} onValueChange={setActiveCategory}>
           <TabsList className="w-full justify-start overflow-x-auto mb-6">
             {categories.map(category => (
-              <TabsTrigger 
-                key={category.id} 
+              <TabsTrigger
+                key={category.id}
                 value={category.id}
                 className="flex items-center space-x-2 whitespace-nowrap"
               >
@@ -55,12 +108,12 @@ const MenuManagement = () => {
           </TabsList>
 
           <div className="space-y-4">
-            {filteredItems.map(item => (
+            {filteredItems.map((item: SupabaseMenuItem) => (
               <Card key={item.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-4">
-                    <img 
-                      src={item.image} 
+                    <img
+                      src={item.image_url || `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 100)}`}
                       alt={item.name}
                       className="w-20 h-20 object-cover rounded"
                     />
@@ -68,16 +121,16 @@ const MenuManagement = () => {
                       <div className="flex items-start justify-between">
                         <div>
                           <h3 className="font-bold text-lg">{item.name}</h3>
-                          <p className="text-gray-600 text-sm mb-2">{item.description}</p>
+                          <p className="text-gray-600 text-sm mb-2">{item.description || 'No description'}</p>
                           <div className="flex items-center space-x-3">
                             <span className="text-orange-600 font-bold text-lg">
                               ${item.price}
                             </span>
-                            <Badge variant={item.available ? "default" : "destructive"}>
-                              {item.available ? "Available" : "Unavailable"}
+                            <Badge variant={item.active ? "default" : "destructive"}>
+                              {item.active ? "Available" : "Unavailable"}
                             </Badge>
                             <span className="text-sm text-gray-500">
-                              Rating: {item.rating}/5
+                              Order: {item.order_index || 0}
                             </span>
                           </div>
                         </div>
@@ -86,7 +139,7 @@ const MenuManagement = () => {
                             <Edit className="w-4 h-4" />
                           </Button>
                           <Button variant="outline" size="sm">
-                            {item.available ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            {item.active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </Button>
                         </div>
                       </div>

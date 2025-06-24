@@ -15,11 +15,11 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { signOut } = useAuth();
-  
+
   // Fetch data from Supabase
   const { data: supabaseTables = [], isLoading: tablesLoading } = useTables();
   const { data: supabaseOrders = [], isLoading: ordersLoading } = useOrders();
-  
+
   // Enable real-time updates
   useRealTimeOrders();
   useRealTimeTables();
@@ -29,17 +29,17 @@ const AdminDashboard = () => {
     ...transformSupabaseTable(table),
     supabaseId: table.id, // Keep the original Supabase ID for navigation
   }));
-  
+
   // Get customer names from current orders
   const tablesWithCustomers = tables.map(table => {
-    const tableOrders = supabaseOrders.filter(order => 
-      order.table_id === table.supabaseId && 
+    const tableOrders = supabaseOrders.filter(order =>
+      order.table_id === table.supabaseId &&
       !['paid', 'cancelled'].includes(order.status || '')
     );
-    const latestOrder = tableOrders.sort((a, b) => 
+    const latestOrder = tableOrders.sort((a, b) =>
       new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
     )[0];
-    
+
     return {
       ...table,
       customerName: latestOrder?.bill_name || undefined,
@@ -47,7 +47,7 @@ const AdminDashboard = () => {
       status: tableOrders.length > 0 ? 'occupied' : table.status,
     };
   });
-  
+
   const stats = {
     totalTables: tables.length,
     occupiedTables: tablesWithCustomers.filter(t => t.status === 'occupied').length,
@@ -122,7 +122,7 @@ const AdminDashboard = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center space-x-2">
@@ -134,7 +134,7 @@ const AdminDashboard = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center space-x-2">
@@ -146,7 +146,7 @@ const AdminDashboard = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-4">
               <div className="flex items-center space-x-2">
@@ -165,15 +165,15 @@ const AdminDashboard = () => {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>{t('admin.dashboard.tablesOverview')}</CardTitle>
             <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => navigate('/admin/orders')}
               >
                 {t('admin.dashboard.viewOrders')}
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => navigate('/admin/menu')}
               >

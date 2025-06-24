@@ -33,17 +33,17 @@ const ItemDetailModal = ({ item, isOpen, onClose, onAddToBill }: ItemDetailModal
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md max-h-screen overflow-y-auto">
         <div className="aspect-video relative mb-4">
-          <img 
-            src={item.image} 
+          <img
+            src={item.image}
             alt={item.name}
             className="w-full h-full object-cover rounded-lg"
           />
         </div>
-        
+
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">{item.name}</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -52,9 +52,9 @@ const ItemDetailModal = ({ item, isOpen, onClose, onAddToBill }: ItemDetailModal
             </div>
             <span className="text-orange-600 font-bold text-xl">${item.price}</span>
           </div>
-          
+
           <p className="text-gray-600">{item.description}</p>
-          
+
           <div className="space-y-2">
             <Label htmlFor="notes">{t('customer.menu.specialInstructions')}</Label>
             <Textarea
@@ -65,7 +65,7 @@ const ItemDetailModal = ({ item, isOpen, onClose, onAddToBill }: ItemDetailModal
               rows={3}
             />
           </div>
-          
+
           <div className="flex items-center justify-between">
             <span className="font-medium">{t('common.labels.quantity')}:</span>
             <div className="flex items-center space-x-3">
@@ -87,16 +87,16 @@ const ItemDetailModal = ({ item, isOpen, onClose, onAddToBill }: ItemDetailModal
               </Button>
             </div>
           </div>
-          
+
           <div className="flex space-x-3 pt-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={onClose}
               className="flex-1"
             >
               {t('common.buttons.cancel')}
             </Button>
-            <Button 
+            <Button
               onClick={handleAddToBill}
               className="flex-1 bg-orange-500 hover:bg-orange-600"
               disabled={!item.available}

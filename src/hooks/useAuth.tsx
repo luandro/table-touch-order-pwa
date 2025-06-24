@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        
+
         // Update localStorage for backward compatibility
         if (session?.user) {
           localStorage.setItem('adminAuth', 'true');
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string) => {
     const redirectUrl = `${window.location.origin}/admin`;
-    
+
     const { error } = await supabase.auth.signUp({
       email,
       password,

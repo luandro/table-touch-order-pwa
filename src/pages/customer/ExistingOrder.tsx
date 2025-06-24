@@ -5,16 +5,31 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
-import { sampleBill } from '@/data/mockData';
+import { useOrder, useTable } from '@/hooks/useSupabaseData';
+import { transformSupabaseOrder } from '@/utils/dataTransform';
 
 const ExistingOrder = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
 
-  // In real app, fetch order by ID
-  const bill = orderId === '123' ? sampleBill : null;
+  // Fetch order from Supabase
+  const { data: supabaseOrder, isLoading: orderLoading, error: orderError } = useOrder(orderId || '');
+  const { data: table } = useTable(supabaseOrder?.table_id || '');
 
-  if (!bill) {
+  // Loading state
+  if (orderLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading order...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error or not found state
+  if (orderError || !supabaseOrder) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card>
@@ -27,6 +42,32 @@ const ExistingOrder = () => {
       </div>
     );
   }
+
+  // Transform order data for display
+  const bill = {
+    id: supabaseOrder.id,
+    tableNumber: table?.table_number || 0,
+    customerName: supabaseOrder.bill_name || 'Customer',
+    items: Array.isArray(supabaseOrder.items) ? (supabaseOrder.items as any[]).map((item: any) => ({
+      id: item.item_id || item.id || Math.random().toString(),
+      menuItem: {
+        id: item.item_id || item.id || '',
+        name: item.name || '',
+        description: item.description || '',
+        price: parseFloat(item.price?.toString() || '0'),
+        category: item.category || '',
+        image: item.image || `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 100)}`,
+        rating: 4.5,
+        available: true,
+      },
+      quantity: parseInt(item.quantity?.toString() || '1'),
+      notes: item.notes || undefined,
+    })) : [],
+    subtotal: supabaseOrder.subtotal,
+    total: supabaseOrder.total,
+    status: supabaseOrder.status || 'pending',
+    createdAt: new Date(supabaseOrder.created_at || '')
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -42,8 +83,8 @@ const ExistingOrder = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm">
         <div className="px-4 py-4 flex items-center">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="sm"
             onClick={() => navigate('/')}
             className="mr-3"
@@ -66,8 +107,8 @@ const ExistingOrder = () => {
           <CardContent className="space-y-4">
             {bill.items.map(item => (
               <div key={item.id} className="flex items-center space-x-4 py-3 border-b last:border-b-0">
-                <img 
-                  src={item.menuItem.image} 
+                <img
+                  src={item.menuItem.image}
                   alt={item.menuItem.name}
                   className="w-16 h-16 object-cover rounded"
                 />
@@ -83,7 +124,7 @@ const ExistingOrder = () => {
                 </div>
               </div>
             ))}
-            
+
             <div className="border-t pt-4">
               <div className="flex justify-between font-bold text-lg">
                 <span>Total:</span>
@@ -94,7 +135,7 @@ const ExistingOrder = () => {
         </Card>
 
         {bill.status === 'active' && (
-          <Button 
+          <Button
             onClick={() => navigate(`/table/${bill.tableNumber}/bill`)}
             className="w-full bg-orange-500 hover:bg-orange-600"
             size="lg"

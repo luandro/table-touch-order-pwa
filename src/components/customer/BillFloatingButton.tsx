@@ -13,7 +13,7 @@ interface BillFloatingButtonProps {
 
 const BillFloatingButton = ({ itemCount, total, onClick }: BillFloatingButtonProps) => {
   const { t } = useTranslation();
-  
+
   if (itemCount === 0) return null;
 
   return (
@@ -25,8 +25,8 @@ const BillFloatingButton = ({ itemCount, total, onClick }: BillFloatingButtonPro
       >
         <Receipt className="w-5 h-5 mr-2" />
         <span className="font-medium">{t('customer.menu.viewBill')}</span>
-        <Badge 
-          variant="secondary" 
+        <Badge
+          variant="secondary"
           className="ml-3 bg-white text-orange-600 font-bold"
         >
           {itemCount}

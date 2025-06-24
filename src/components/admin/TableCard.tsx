@@ -12,7 +12,7 @@ interface TableCardProps {
 
 const TableCard = ({ table, onClick }: TableCardProps) => {
   const { t } = useTranslation();
-  
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'occupied': return 'bg-red-100 border-red-300 text-red-800';
@@ -32,7 +32,7 @@ const TableCard = ({ table, onClick }: TableCardProps) => {
   };
 
   return (
-    <Card 
+    <Card
       className={`cursor-pointer hover:shadow-lg transition-shadow ${getStatusColor(table.status)}`}
       onClick={onClick}
     >

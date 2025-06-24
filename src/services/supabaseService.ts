@@ -1,14 +1,14 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { 
-  Restaurant, 
-  Table, 
-  MenuCategory, 
-  MenuItem, 
-  Order, 
+import type {
+  Restaurant,
+  Table,
+  MenuCategory,
+  MenuItem,
+  Order,
   OrderInsert,
   TableUpdate,
-  OrderUpdate 
+  OrderUpdate
 } from '@/types/supabase';
 import { mapToSupabaseOrderStatus } from '@/utils/dataTransform';
 
@@ -20,7 +20,7 @@ export const restaurantService = {
       .select('*')
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -31,7 +31,7 @@ export const restaurantService = {
       .select('*')
       .limit(1)
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -44,7 +44,7 @@ export const tablesService = {
       .from('tables')
       .select('*')
       .order('table_number');
-    
+
     if (error) throw error;
     return data || [];
   },
@@ -55,7 +55,7 @@ export const tablesService = {
       .select('*')
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -66,7 +66,7 @@ export const tablesService = {
       .select('*')
       .eq('table_number', tableNumber)
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -78,7 +78,7 @@ export const tablesService = {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -92,7 +92,7 @@ export const menuService = {
       .select('*')
       .eq('active', true)
       .order('order_index');
-    
+
     if (error) throw error;
     return data || [];
   },
@@ -103,7 +103,7 @@ export const menuService = {
       .select('*')
       .eq('active', true)
       .order('order_index');
-    
+
     if (error) throw error;
     return data || [];
   },
@@ -115,7 +115,7 @@ export const menuService = {
       .eq('category_id', categoryId)
       .eq('active', true)
       .order('order_index');
-    
+
     if (error) throw error;
     return data || [];
   }
@@ -129,7 +129,7 @@ export const ordersService = {
       .insert(order)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -140,7 +140,7 @@ export const ordersService = {
       .select('*')
       .eq('table_id', tableId)
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data || [];
   },
@@ -153,7 +153,7 @@ export const ordersService = {
         tables!inner(table_number)
       `)
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data || [];
   },
@@ -162,14 +162,14 @@ export const ordersService = {
     const supabaseStatus = mapToSupabaseOrderStatus(status);
     const { data, error } = await supabase
       .from('orders')
-      .update({ 
-        status: supabaseStatus, 
-        updated_at: new Date().toISOString() 
+      .update({
+        status: supabaseStatus,
+        updated_at: new Date().toISOString()
       })
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   },
@@ -180,7 +180,7 @@ export const ordersService = {
       .select('*')
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -190,10 +190,10 @@ export const ordersService = {
 export const subscribeToOrders = (callback: (payload: any) => void) => {
   return supabase
     .channel('orders-changes')
-    .on('postgres_changes', { 
-      event: '*', 
-      schema: 'public', 
-      table: 'orders' 
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'orders'
     }, callback)
     .subscribe();
 };
@@ -201,10 +201,10 @@ export const subscribeToOrders = (callback: (payload: any) => void) => {
 export const subscribeToTables = (callback: (payload: any) => void) => {
   return supabase
     .channel('tables-changes')
-    .on('postgres_changes', { 
-      event: '*', 
-      schema: 'public', 
-      table: 'tables' 
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'tables'
     }, callback)
     .subscribe();
 };

@@ -13,15 +13,15 @@ interface MenuItemCardProps {
 
 const MenuItemCard = ({ item, onClick }: MenuItemCardProps) => {
   const { t } = useTranslation();
-  
+
   return (
-    <Card 
+    <Card
       className="cursor-pointer hover:shadow-lg transition-shadow duration-200 overflow-hidden"
       onClick={onClick}
     >
       <div className="aspect-video relative">
-        <img 
-          src={item.image} 
+        <img
+          src={item.image}
           alt={item.name}
           className="w-full h-full object-cover"
         />

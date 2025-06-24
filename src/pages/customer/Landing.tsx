@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import NameInputModal from '@/components/customer/NameInputModal';
-import { sampleBill } from '@/data/mockData';
+import { useOrder, useTableByNumber } from '@/hooks/useSupabaseData';
 
 const Landing = () => {
   const [searchParams] = useSearchParams();
@@ -12,30 +12,49 @@ const Landing = () => {
   const [showNameModal, setShowNameModal] = useState(false);
   const [tableNumber, setTableNumber] = useState(99);
 
-  useEffect(() => {
-    const orderId = searchParams.get('orderId');
-    const table = searchParams.get('table');
+  const orderId = searchParams.get('orderId');
+  const tableParam = searchParams.get('table');
+  const tableNum = tableParam ? parseInt(tableParam) : null;
 
+  // Fetch order if orderId is provided
+  const { data: existingOrder, isLoading: orderLoading, error: orderError } = useOrder(orderId || '', {
+    enabled: !!orderId
+  });
+
+  // Fetch table if table number is provided
+  const { data: table, isLoading: tableLoading, error: tableError } = useTableByNumber(tableNum || 0, {
+    enabled: !!tableNum
+  });
+
+  useEffect(() => {
     if (orderId) {
-      // Check if order exists (using sample data)
-      if (orderId === '123') {
+      if (orderLoading) return; // Wait for order query to complete
+
+      if (existingOrder) {
         navigate(`/order/${orderId}`);
-      } else {
+      } else if (orderError || (!existingOrder && !orderLoading)) {
         navigate('/'); // Order not found, redirect to default
       }
-    } else if (table) {
-      const tableNum = parseInt(table);
-      if (tableNum && tableNum > 0) {
-        setTableNumber(tableNum);
+    } else if (tableParam) {
+      if (tableLoading) return; // Wait for table query to complete
+
+      if (table) {
+        setTableNumber(table.table_number);
         setShowNameModal(true);
-      } else {
-        setShowNameModal(true);
+      } else if (tableError || (!table && !tableLoading)) {
+        // Table not found, but still allow access with the number provided
+        if (tableNum && tableNum > 0) {
+          setTableNumber(tableNum);
+          setShowNameModal(true);
+        } else {
+          setShowNameModal(true);
+        }
       }
     } else {
       // Default to table 99
       setShowNameModal(true);
     }
-  }, [searchParams, navigate]);
+  }, [orderId, existingOrder, orderLoading, orderError, tableParam, table, tableLoading, tableError, tableNum, navigate]);
 
   const handleNameSubmit = (name: string) => {
     // Store customer name (in real app, this would be in state management)
@@ -51,7 +70,7 @@ const Landing = () => {
         <h1 className="text-4xl font-bold text-orange-600 mb-4">Bella Vista</h1>
         <p className="text-gray-600">{t('customer.welcome.loading')}</p>
       </div>
-      
+
       <NameInputModal
         isOpen={showNameModal}
         tableNumber={tableNumber}
