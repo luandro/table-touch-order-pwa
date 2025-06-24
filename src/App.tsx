@@ -17,6 +17,7 @@ import AdminLogin from "./pages/admin/Login";
 import AdminDashboard from "./pages/admin/Dashboard";
 import TableDetail from "./pages/admin/TableDetail";
 import MenuManagement from "./pages/admin/MenuManagement";
+import MenuItemForm from "./pages/admin/MenuItemForm";
 
 import NotFound from "./pages/NotFound";
 
@@ -78,6 +79,22 @@ const AppContent = () => (
       element={
         <ProtectedAdminRoute>
           <MenuManagement />
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="/admin/menu/new"
+      element={
+        <ProtectedAdminRoute>
+          <MenuItemForm mode="new" />
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="/admin/menu/edit/:itemId"
+      element={
+        <ProtectedAdminRoute>
+          <MenuItemForm mode="edit" />
         </ProtectedAdminRoute>
       }
     />

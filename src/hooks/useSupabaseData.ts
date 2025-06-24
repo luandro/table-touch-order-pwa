@@ -10,7 +10,7 @@ import {
   subscribeToTables
 } from '@/services/supabaseService';
 import { useEffect } from 'react';
-import type { OrderInsert, TableUpdate } from '@/types/supabase';
+import type { OrderInsert, TableUpdate, MenuItem, MenuItemInsert, MenuItemUpdate } from '@/types/supabase';
 
 // Tables hooks
 export const useTables = () => {
@@ -48,6 +48,14 @@ export const useMenuItems = () => {
   return useQuery({
     queryKey: ['menu-items'],
     queryFn: menuService.getMenuItems,
+  });
+};
+
+export const useMenuItem = (itemId: string) => {
+  return useQuery({
+    queryKey: ['menu-item', itemId],
+    queryFn: () => menuService.getMenuItemById(itemId),
+    enabled: !!itemId,
   });
 };
 
@@ -190,4 +198,99 @@ export const useRealTimeTables = () => {
       subscription.unsubscribe();
     };
   }, [queryClient]);
+};
+
+// Menu item mutations
+export const useCreateMenuItem = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (item: MenuItemInsert) => menuService.createMenuItem(item),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-items'] });
+      toast({
+        title: "Item Created",
+        description: "Menu item has been created successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create menu item",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useUpdateMenuItem = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: string; updates: MenuItemUpdate }) =>
+      menuService.updateMenuItem(id, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-items'] });
+      toast({
+        title: "Item Updated",
+        description: "Menu item has been updated successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update menu item",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useDeleteMenuItem = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (id: string) => menuService.deleteMenuItem(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-items'] });
+      toast({
+        title: "Item Deleted",
+        description: "Menu item has been removed successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete menu item",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useToggleMenuItemAvailability = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, active }: { id: string; active: boolean }) =>
+      menuService.toggleMenuItemAvailability(id, active),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-items'] });
+      toast({
+        title: "Availability Updated",
+        description: "Menu item availability has been updated!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update availability",
+        variant: "destructive",
+      });
+    },
+  });
 };

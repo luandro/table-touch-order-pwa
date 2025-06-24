@@ -5,17 +5,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ArrowLeft, Plus, Edit, Eye, EyeOff } from 'lucide-react';
-import { useMenuCategories, useMenuItems } from '@/hooks/useSupabaseData';
+import { ArrowLeft, Plus, Edit, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { useMenuCategories, useMenuItems, useDeleteMenuItem, useToggleMenuItemAvailability } from '@/hooks/useSupabaseData';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import type { MenuCategory as SupabaseMenuCategory, MenuItem as SupabaseMenuItem } from '@/types/supabase';
 
 const MenuManagement = () => {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState<string>('');
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; item: SupabaseMenuItem | null }>({
+    open: false,
+    item: null
+  });
 
   // Fetch data from Supabase
   const { data: supabaseCategories = [], isLoading: loadingCategories, error: categoriesError } = useMenuCategories();
   const { data: supabaseMenuItems = [], isLoading: loadingItems, error: itemsError } = useMenuItems();
+
+  // Mutations
+  const deleteMutation = useDeleteMenuItem();
+  const toggleAvailabilityMutation = useToggleMenuItemAvailability();
 
   // Transform categories for display
   const categories = useMemo(() => {
@@ -37,6 +46,26 @@ const MenuManagement = () => {
   const filteredItems = useMemo(() => {
     return supabaseMenuItems.filter((item: SupabaseMenuItem) => item.category_id === activeCategory);
   }, [supabaseMenuItems, activeCategory]);
+
+  // Handle delete with confirmation
+  const handleDelete = (item: SupabaseMenuItem) => {
+    setDeleteDialog({ open: true, item });
+  };
+
+  const confirmDelete = () => {
+    if (deleteDialog.item) {
+      deleteMutation.mutate(deleteDialog.item.id);
+      setDeleteDialog({ open: false, item: null });
+    }
+  };
+
+  // Handle toggle availability
+  const handleToggleAvailability = (item: SupabaseMenuItem) => {
+    toggleAvailabilityMutation.mutate({
+      id: item.id,
+      active: !item.active
+    });
+  };
 
   // Loading state
   if (loadingCategories || loadingItems) {
@@ -85,7 +114,10 @@ const MenuManagement = () => {
               <p className="text-gray-600">Manage restaurant menu items</p>
             </div>
           </div>
-          <Button className="bg-orange-500 hover:bg-orange-600">
+          <Button
+            className="bg-orange-500 hover:bg-orange-600"
+            onClick={() => navigate('/admin/menu/new')}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Item
           </Button>
@@ -108,7 +140,22 @@ const MenuManagement = () => {
           </TabsList>
 
           <div className="space-y-4">
-            {filteredItems.map((item: SupabaseMenuItem) => (
+            {filteredItems.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <p className="text-gray-500 text-lg">No items in this category</p>
+                  <p className="text-gray-400 text-sm mt-2">Add your first menu item to get started</p>
+                  <Button
+                    className="mt-4 bg-orange-500 hover:bg-orange-600"
+                    onClick={() => navigate('/admin/menu/new')}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add First Item
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              filteredItems.map((item: SupabaseMenuItem) => (
               <Card key={item.id}>
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-4">
@@ -135,11 +182,32 @@ const MenuManagement = () => {
                           </div>
                         </div>
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/admin/menu/edit/${item.id}`)}
+                            title="Edit item"
+                          >
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleAvailability(item)}
+                            title={item.active ? "Mark as unavailable" : "Mark as available"}
+                            disabled={toggleAvailabilityMutation.isPending}
+                          >
                             {item.active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(item)}
+                            title="Delete item"
+                            disabled={deleteMutation.isPending}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
@@ -147,10 +215,22 @@ const MenuManagement = () => {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              ))
+            )}
           </div>
         </Tabs>
       </div>
+
+      <ConfirmationDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog({ open, item: null })}
+        title="Delete Menu Item"
+        description={`Are you sure you want to delete "${deleteDialog.item?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDelete}
+        variant="destructive"
+      />
     </div>
   );
 };

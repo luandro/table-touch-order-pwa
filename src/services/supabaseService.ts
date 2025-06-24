@@ -5,6 +5,8 @@ import type {
   Table,
   MenuCategory,
   MenuItem,
+  MenuItemInsert,
+  MenuItemUpdate,
   Order,
   OrderInsert,
   TableUpdate,
@@ -101,7 +103,6 @@ export const menuService = {
     const { data, error } = await supabase
       .from('menu_items')
       .select('*')
-      .eq('active', true)
       .order('order_index');
 
     if (error) throw error;
@@ -118,6 +119,106 @@ export const menuService = {
 
     if (error) throw error;
     return data || [];
+  },
+
+  async getMenuItemById(id: string): Promise<MenuItem | null> {
+    const { data, error } = await supabase
+      .from('menu_items')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async createMenuItem(item: MenuItemInsert): Promise<MenuItem> {
+    const { data, error } = await supabase
+      .from('menu_items')
+      .insert(item)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async updateMenuItem(id: string, updates: MenuItemUpdate): Promise<MenuItem> {
+    const { data, error } = await supabase
+      .from('menu_items')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteMenuItem(id: string): Promise<MenuItem> {
+    // Hard delete - removes the record permanently
+    const { data, error } = await supabase
+      .from('menu_items')
+      .delete()
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async toggleMenuItemAvailability(id: string, active: boolean): Promise<MenuItem> {
+    const { data, error } = await supabase
+      .from('menu_items')
+      .update({ active })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async uploadMenuItemImage(file: File): Promise<string> {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `menu-items/${fileName}`;
+
+      // First, try to create the bucket if it doesn't exist
+      const { error: bucketError } = await supabase.storage.createBucket('menu-images', {
+        public: true,
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+        fileSizeLimit: 5242880 // 5MB
+      });
+
+      // Ignore error if bucket already exists
+      if (bucketError && !bucketError.message.includes('already exists')) {
+        console.warn('Bucket creation warning:', bucketError.message);
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from('menu-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`Failed to upload image: ${uploadError.message}`);
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('menu-images')
+        .getPublicUrl(filePath);
+
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error('Image upload service error:', error);
+      throw error;
+    }
   }
 };
 

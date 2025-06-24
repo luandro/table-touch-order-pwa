@@ -37,10 +37,10 @@ const MenuItemCard = ({ item, onClick }: MenuItemCardProps) => {
           <span className="text-orange-600 font-bold text-lg">${item.price}</span>
         </div>
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.description}</p>
-        <div className="flex items-center">
+        {/* <div className="flex items-center">
           <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
           <span className="ml-1 text-sm font-medium">{t('customer.menu.rating', { rating: item.rating })}</span>
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );
