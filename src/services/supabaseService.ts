@@ -154,23 +154,22 @@ export const tablesService = {
       .eq('table_id', tableId)
       .not('status', 'in', '(paid,cancelled)');
 
-    // Cancel all active orders
+    // Cancel all active orders in a single batch operation
     const cancelledOrders: Order[] = [];
     if (activeOrders && activeOrders.length > 0) {
-      for (const order of activeOrders) {
-        const { data: cancelledOrder } = await supabase
-          .from('orders')
-          .update({
-            status: 'cancelled',
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', order.id)
-          .select()
-          .single();
+      const orderIds = activeOrders.map(order => order.id);
+      
+      const { data: updatedOrders } = await supabase
+        .from('orders')
+        .update({
+          status: 'cancelled',
+          updated_at: new Date().toISOString()
+        })
+        .in('id', orderIds)
+        .select();
 
-        if (cancelledOrder) {
-          cancelledOrders.push(cancelledOrder);
-        }
+      if (updatedOrders) {
+        cancelledOrders.push(...updatedOrders);
       }
     }
 
