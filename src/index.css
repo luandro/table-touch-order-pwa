@@ -101,3 +101,48 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Line clamp utilities for mobile text truncation */
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Enhanced touch targets */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Smooth transitions for mobile interactions */
+  .smooth-transition {
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* FAB animation */
+  .fab-bounce {
+    animation: fab-bounce 0.3s ease-out;
+  }
+
+  @keyframes fab-bounce {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}

@@ -18,6 +18,8 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import TableDetail from "./pages/admin/TableDetail";
 import MenuManagement from "./pages/admin/MenuManagement";
 import MenuItemForm from "./pages/admin/MenuItemForm";
+import CategoriesManagement from "./pages/admin/CategoriesManagement";
+import CategoryForm from "./pages/admin/CategoryForm";
 
 import NotFound from "./pages/NotFound";
 
@@ -95,6 +97,30 @@ const AppContent = () => (
       element={
         <ProtectedAdminRoute>
           <MenuItemForm mode="edit" />
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="/admin/menu/categories"
+      element={
+        <ProtectedAdminRoute>
+          <CategoriesManagement />
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="/admin/menu/categories/new"
+      element={
+        <ProtectedAdminRoute>
+          <CategoryForm mode="new" />
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="/admin/menu/categories/edit/:categoryId"
+      element={
+        <ProtectedAdminRoute>
+          <CategoryForm mode="edit" />
         </ProtectedAdminRoute>
       }
     />

@@ -7,7 +7,7 @@
       "delete": "Eliminar",
       "add": "Agregar",
       "confirm": "Confirmar",
-      "back": "Atrás",
+      "back": "Regresar",
       "continue": "Continuar",
       "submit": "Enviar",
       "close": "Cerrar",
@@ -15,8 +15,8 @@
       "logout": "Cerrar sesión",
       "view": "Ver",
       "update": "Actualizar",
-      "remove": "Remover",
-      "clear": "Borrar"
+      "remove": "Eliminar",
+      "clear": "Limpiar"
     },
     "labels": {
       "name": "Nombre",
@@ -76,18 +76,18 @@
     "menu": {
       "title": "Menú",
       "categories": "Categorías",
-      "items": "Items",
+      "items": "Artículos",
       "addToBill": "Agregar a la cuenta",
       "viewBill": "Ver cuenta",
       "itemCount": "{{count}} artículo",
       "itemCount_plural": "{{count}} artículos",
       "specialInstructions": "Instrucciones especiales (Opcional)",
-      "specialInstructionsPlaceholder": "Cualquier petición especial o alergia...",
+      "specialInstructionsPlaceholder": "Cualquier solicitud especial o alergia...",
       "addToBillWithPrice": "Agregar a la cuenta - ${{price}}",
       "rating": "Calificación: {{rating}}/5"
     },
     "categories": {
-      "appetizers": "Entrantes",
+      "appetizers": "Aperitivos",
       "mains": "Platos principales",
       "desserts": "Postres",
       "beverages": "Bebidas",
@@ -95,11 +95,11 @@
       "soups": "Sopas"
     },
     "bill": {
-      "title": "Tu Cuenta",
+      "title": "Tu cuenta",
       "empty": "No hay artículos en tu cuenta",
       "customerInfo": "Información del cliente",
       "orderItems": "Artículos del pedido",
-      "eachPrice": "${{price}} c/u",
+      "eachPrice": "${{price}} cada uno",
       "itemNote": "Nota: {{note}}",
       "placeOrder": "Realizar pedido",
       "continueEditing": "Continuar editando el pedido"
@@ -126,20 +126,20 @@
       "emailPlaceholder": "admin@bellavista.com",
       "passwordPlaceholder": "Ingresa la contraseña",
       "invalidCredentials": "Credenciales inválidas. Usa admin@bellavista.com / admin123",
-      "demoCredentials": "Credenciales de prueba:",
-      "demoEmail": "Email: admin@bellavista.com",
+      "demoCredentials": "Credenciales de demostración:",
+      "demoEmail": "Correo: admin@bellavista.com",
       "demoPassword": "Contraseña: admin123"
     },
     "dashboard": {
       "title": "Administración de Bella Vista",
-      "subtitle": "Panel de gestión del restaurante",
+      "subtitle": "Tablero de gestión del restaurante",
       "newOrdersAlert": "{{count}} nuevo pedido esperando confirmación",
       "newOrdersAlert_plural": "{{count}} nuevos pedidos esperando confirmación",
       "stats": {
         "occupiedTables": "Mesas ocupadas",
         "pendingOrders": "Pedidos pendientes",
         "activeOrders": "Pedidos activos",
-        "totalTables": "Mesas totales"
+        "totalTables": "Total de mesas"
       },
       "tablesOverview": "Resumen de mesas",
       "viewOrders": "Ver pedidos",
@@ -179,12 +179,61 @@
     },
     "menu": {
       "management": "Gestión del menú",
-      "subtitle": "Gestionar elementos del menú del restaurante",
-      "addItem": "Agregar ítem",
-      "noItems": "No hay ítems en esta categoría",
+      "subtitle": "Gestionar los artículos del menú del restaurante",
+      "addItem": "Agregar artículo",
+      "editItem": "Editar artículo",
+      "createItem": "Crear artículo",
+      "updateItem": "Actualizar artículo",
+      "deleteItem": "Eliminar artículo",
+      "noItems": "No hay artículos en esta categoría",
+      "form": {
+        "title": "Detalles del artículo",
+        "name": "Nombre",
+        "description": "Descripción",
+        "price": "Precio",
+        "category": "Categoría",
+        "orderIndex": "Índice de pedido",
+        "availability": "Disponibilidad",
+        "image": "Imagen del artículo",
+        "available": "Disponible",
+        "unavailable": "No disponible",
+        "placeholders": {
+          "name": "Ingresa el nombre del artículo",
+          "description": "Ingresa la descripción del artículo",
+          "price": "0.00",
+          "selectCategory": "Selecciona categoría",
+          "orderIndex": "0"
+        },
+        "validation": {
+          "nameRequired": "El nombre del artículo es obligatorio",
+          "nameMinLength": "El nombre debe tener al menos 2 caracteres",
+          "descriptionRequired": "La descripción es obligatoria",
+          "descriptionMinLength": "La descripción debe tener al menos 10 caracteres",
+          "priceRequired": "El precio es obligatorio",
+          "priceMin": "El precio debe ser al menos $0.01",
+          "categoryRequired": "La categoría es obligatoria",
+          "orderIndexMin": "El índice de pedido debe ser 0 o mayor"
+        },
+        "imageUpload": {
+          "dragDrop": "Arrastrar y soltar una imagen aquí, o hacer clic para seleccionar",
+          "dragActive": "Soltar la imagen aquí...",
+          "fileTypes": "JPG, PNG, WebP hasta 5MB",
+          "processing": "Procesando la imagen...",
+          "invalidFile": "Archivo inválido",
+          "onlyImages": "Solo se permiten archivos JPG, PNG y WebP",
+          "fileTooLarge": "El tamaño del archivo debe ser menor a 5MB",
+          "processingError": "Error al procesar la imagen. Inténtalo nuevamente."
+        }
+      },
       "itemActions": {
-        "edit": "Editar ítem",
-        "toggleAvailability": "Alternar disponibilidad"
+        "edit": "Editar artículo",
+        "toggleAvailability": "Alternar disponibilidad",
+        "delete": "Eliminar artículo",
+        "editTitle": "Editar artículo",
+        "toggleTitle": "Marcar como no disponible",
+        "toggleTitleActive": "Marcar como disponible",
+        "deleteTitle": "Eliminar artículo",
+        "deleteConfirm": "¿Estás seguro de que deseas eliminar \"{{name}}\"? Esta acción no se puede deshacer."
       }
     }
   },
@@ -193,17 +242,17 @@
       "required": "Este campo es obligatorio",
       "email": "Por favor, ingresa una dirección de email válida",
       "minLength": "Debe tener al menos {{min}} caracteres",
-      "maxLength": "No debe superar los {{max}} caracteres"
+      "maxLength": "No debe tener más de {{max}} caracteres"
     },
     "placeholders": {
-      "searchItems": "Buscar en el menú...",
-      "customerNotes": "Notas o solicitudes especiales del cliente...",
-      "itemDescription": "Ingresa la descripción del ítem..."
+      "searchItems": "Buscar artículos del menú...",
+      "customerNotes": "Notas del cliente o peticiones especiales...",
+      "itemDescription": "Ingresa la descripción del artículo..."
     }
   },
   "errors": {
-    "generic": "Algo salió mal. Por favor, intenta de nuevo.",
-    "network": "Error de red. Por favor, revisa tu conexión.",
+    "generic": "Algo salió mal. Por favor, inténtalo nuevamente.",
+    "network": "Error de red. Por favor, verifica tu conexión.",
     "notFound": "Recurso no encontrado.",
     "unauthorized": "No estás autorizado para realizar esta acción.",
     "serverError": "Error del servidor. Por favor, intenta más tarde."
@@ -212,16 +261,27 @@
     "orderPlaced": "¡Tu pedido ha sido realizado con éxito!",
     "orderUpdated": "Pedido actualizado con éxito",
     "orderCancelled": "El pedido ha sido cancelado",
-    "itemAdded": "Artículo agregado a la cuenta",
+    "itemAdded": "Artículo añadido a la cuenta",
     "itemRemoved": "Artículo eliminado de la cuenta",
     "saveSuccess": "Cambios guardados con éxito",
-    "deleteSuccess": "Artículo eliminado con éxito"
+    "deleteSuccess": "Artículo eliminado correctamente",
+    "menuItem": {
+      "created": "¡Artículo del menú creado con éxito!",
+      "updated": "¡Artículo del menú actualizado con éxito!",
+      "deleted": "¡Artículo del menú eliminado con éxito!",
+      "availabilityUpdated": "¡La disponibilidad del artículo del menú ha sido actualizada!",
+      "createError": "Error al crear el artículo del menú",
+      "updateError": "Error al actualizar el artículo del menú",
+      "deleteError": "Error al eliminar el artículo del menú",
+      "availabilityError": "Error al actualizar disponibilidad",
+      "saveError": "Error al guardar el artículo del menú. Por favor, inténtalo nuevamente."
+    }
   },
   "time": {
     "justNow": "Justo ahora",
-    "minutesAgo": "hace {{count}} minuto",
-    "minutesAgo_plural": "hace {{count}} minutos",
-    "hoursAgo": "hace {{count}} hora",
-    "hoursAgo_plural": "hace {{count}} horas"
+    "minutesAgo": "Hace {{count}} minuto",
+    "minutesAgo_plural": "Hace {{count}} minutos",
+    "hoursAgo": "Hace {{count}} hora",
+    "hoursAgo_plural": "Hace {{count}} horas"
   }
 }

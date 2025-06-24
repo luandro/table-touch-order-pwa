@@ -99,6 +99,119 @@ export const menuService = {
     return data || [];
   },
 
+  async getAllCategories(): Promise<MenuCategory[]> {
+    const { data, error } = await supabase
+      .from('menu_categories')
+      .select('*')
+      .order('order_index');
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getCategoriesWithItemCount(): Promise<(MenuCategory & { item_count: number })[]> {
+    // Get all categories first
+    const { data: categories, error: categoriesError } = await supabase
+      .from('menu_categories')
+      .select('*')
+      .order('order_index');
+
+    if (categoriesError) throw categoriesError;
+
+    // Get item counts for each category
+    const categoriesWithCounts = await Promise.all(
+      (categories || []).map(async (category) => {
+        const { count, error: countError } = await supabase
+          .from('menu_items')
+          .select('*', { count: 'exact', head: true })
+          .eq('category_id', category.id);
+
+        if (countError) throw countError;
+
+        return {
+          ...category,
+          item_count: count || 0
+        };
+      })
+    );
+
+    return categoriesWithCounts;
+  },
+
+  async getCategoryById(id: string): Promise<MenuCategory | null> {
+    const { data, error } = await supabase
+      .from('menu_categories')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async createCategory(category: Omit<MenuCategory, 'id' | 'created_at' | 'updated_at'>): Promise<MenuCategory> {
+    const { data, error } = await supabase
+      .from('menu_categories')
+      .insert(category)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async updateCategory(id: string, updates: Partial<MenuCategory>): Promise<MenuCategory> {
+    const { data, error } = await supabase
+      .from('menu_categories')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async deactivateCategory(id: string): Promise<MenuCategory> {
+    // Soft delete - set active to false
+    const { data, error } = await supabase
+      .from('menu_categories')
+      .update({ active: false })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteCategory(id: string): Promise<void> {
+    // Hard delete - removes the record permanently
+    const { error } = await supabase
+      .from('menu_categories')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
+  async reorderCategories(categoryIds: string[]): Promise<void> {
+    // Use Promise.all for concurrent updates for better performance
+    const updates = categoryIds.map((id, index) => 
+      supabase
+        .from('menu_categories')
+        .update({ order_index: index })
+        .eq('id', id)
+    );
+
+    const results = await Promise.all(updates);
+    const errors = results.filter(result => result.error);
+    
+    if (errors.length > 0) {
+      throw new Error(`Failed to reorder categories: ${errors[0].error?.message}`);
+    }
+  },
+
   async getMenuItems(): Promise<MenuItem[]> {
     const { data, error } = await supabase
       .from('menu_items')
