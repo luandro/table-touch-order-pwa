@@ -182,10 +182,59 @@
       "management": "Menu Management",
       "subtitle": "Manage restaurant menu items",
       "addItem": "Add Item",
+      "editItem": "Edit Item",
+      "createItem": "Create Item",
+      "updateItem": "Update Item",
+      "deleteItem": "Delete Item",
       "noItems": "No items in this category",
+      "form": {
+        "title": "Item Details",
+        "name": "Name",
+        "description": "Description",
+        "price": "Price",
+        "category": "Category",
+        "orderIndex": "Order Index",
+        "availability": "Availability",
+        "image": "Item Image",
+        "available": "Available",
+        "unavailable": "Unavailable",
+        "placeholders": {
+          "name": "Enter item name",
+          "description": "Enter item description",
+          "price": "0.00",
+          "selectCategory": "Select category",
+          "orderIndex": "0"
+        },
+        "validation": {
+          "nameRequired": "Item name is required",
+          "nameMinLength": "Name must be at least 2 characters",
+          "descriptionRequired": "Description is required",
+          "descriptionMinLength": "Description must be at least 10 characters",
+          "priceRequired": "Price is required",
+          "priceMin": "Price must be at least $0.01",
+          "categoryRequired": "Category is required",
+          "orderIndexMin": "Order index must be 0 or greater"
+        },
+        "imageUpload": {
+          "dragDrop": "Drag & drop an image here, or click to select",
+          "dragActive": "Drop the image here...",
+          "fileTypes": "JPG, PNG, WebP up to 5MB",
+          "processing": "Processing image...",
+          "invalidFile": "Invalid File",
+          "onlyImages": "Only JPG, PNG, and WebP files are allowed",
+          "fileTooLarge": "File size must be less than 5MB",
+          "processingError": "Failed to process image. Please try again."
+        }
+      },
       "itemActions": {
         "edit": "Edit Item",
-        "toggleAvailability": "Toggle Availability"
+        "toggleAvailability": "Toggle Availability",
+        "delete": "Delete Item",
+        "editTitle": "Edit item",
+        "toggleTitle": "Mark as unavailable",
+        "toggleTitleActive": "Mark as available",
+        "deleteTitle": "Delete item",
+        "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
       }
     }
   },
@@ -216,7 +265,18 @@
     "itemAdded": "Item added to bill",
     "itemRemoved": "Item removed from bill",
     "saveSuccess": "Changes saved successfully",
-    "deleteSuccess": "Item deleted successfully"
+    "deleteSuccess": "Item deleted successfully",
+    "menuItem": {
+      "created": "Menu item has been created successfully!",
+      "updated": "Menu item has been updated successfully!",
+      "deleted": "Menu item has been removed successfully!",
+      "availabilityUpdated": "Menu item availability has been updated!",
+      "createError": "Failed to create menu item",
+      "updateError": "Failed to update menu item",
+      "deleteError": "Failed to delete menu item",
+      "availabilityError": "Failed to update availability",
+      "saveError": "Failed to save menu item. Please try again."
+    }
   },
   "time": {
     "justNow": "Just now",

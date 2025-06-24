@@ -46,10 +46,10 @@ const ItemDetailModal = ({ item, isOpen, onClose, onAddToBill }: ItemDetailModal
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
+            {/* <div className="flex items-center">
               <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
               <span className="ml-1 text-sm font-medium">{item.rating}</span>
-            </div>
+            </div> */}
             <span className="text-orange-600 font-bold text-xl">${item.price}</span>
           </div>
 
