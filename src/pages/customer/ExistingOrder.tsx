@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
-import { useOrder, useTable } from '@/hooks/useSupabaseData';
+import { useOrder, useTable, useCancelOrder } from '@/hooks/useSupabaseData';
 import { transformSupabaseOrder } from '@/utils/dataTransform';
 
 const ExistingOrder = () => {
@@ -15,6 +15,7 @@ const ExistingOrder = () => {
   // Fetch order from Supabase
   const { data: supabaseOrder, isLoading: orderLoading, error: orderError } = useOrder(orderId || '');
   const { data: table } = useTable(supabaseOrder?.table_id || '');
+  const { mutate: cancelOrder, isPending: cancelling } = useCancelOrder();
 
   // Loading state
   if (orderLoading) {
@@ -71,11 +72,28 @@ const ExistingOrder = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active': return <Badge className="bg-blue-500">Active</Badge>;
-      case 'placed': return <Badge className="bg-yellow-500">Placed</Badge>;
-      case 'completed': return <Badge className="bg-green-500">Completed</Badge>;
+      case 'pending': return <Badge className="bg-yellow-500">Pending</Badge>;
+      case 'confirmed': return <Badge className="bg-blue-500">Confirmed</Badge>;
+      case 'preparing': return <Badge className="bg-orange-500">Preparing</Badge>;
+      case 'ready': return <Badge className="bg-green-500">Ready</Badge>;
+      case 'served': return <Badge className="bg-gray-500">Served</Badge>;
       case 'cancelled': return <Badge variant="destructive">Cancelled</Badge>;
       default: return <Badge>Unknown</Badge>;
+    }
+  };
+
+  const handleCancelOrder = () => {
+    if (!supabaseOrder) return;
+
+    if (window.confirm('Are you sure you want to cancel this order?')) {
+      cancelOrder(
+        { id: supabaseOrder.id, cancelledBy: 'customer' },
+        {
+          onSuccess: () => {
+            navigate('/');
+          }
+        }
+      );
     }
   };
 
@@ -134,15 +152,30 @@ const ExistingOrder = () => {
           </CardContent>
         </Card>
 
-        {bill.status === 'active' && (
-          <Button
-            onClick={() => navigate(`/table/${bill.tableNumber}/bill`)}
-            className="w-full bg-orange-500 hover:bg-orange-600"
-            size="lg"
-          >
-            Continue Editing Order
-          </Button>
-        )}
+        {/* Action buttons based on order status */}
+        <div className="space-y-3">
+          {bill.status === 'pending' && (
+            <Button
+              onClick={handleCancelOrder}
+              variant="destructive"
+              className="w-full"
+              size="lg"
+              disabled={cancelling}
+            >
+              {cancelling ? 'Cancelling...' : 'Cancel Order'}
+            </Button>
+          )}
+
+          {bill.status === 'active' && (
+            <Button
+              onClick={() => navigate(`/table/${bill.tableNumber}/bill`)}
+              className="w-full bg-orange-500 hover:bg-orange-600"
+              size="lg"
+            >
+              Continue Editing Order
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

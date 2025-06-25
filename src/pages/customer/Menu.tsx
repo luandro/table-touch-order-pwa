@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import MenuItemCard from '@/components/customer/MenuItemCard';
-import BillFloatingButton from '@/components/customer/BillFloatingButton';
+import OrderButton from '@/components/customer/OrderButton';
 import ItemDetailModal from '@/components/customer/ItemDetailModal';
 import OrderStatusCard from '@/components/customer/OrderStatusCard';
 import { useMenuCategories, useMenuItemsByCategory, useOrdersByTable, useRealTimeOrders } from '@/hooks/useSupabaseData';
@@ -20,6 +20,7 @@ const Menu = () => {
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [showOrderStatus, setShowOrderStatus] = useState(false);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const customerName = localStorage.getItem('customerName') || t('common.labels.customer');
 
@@ -107,7 +108,14 @@ const Menu = () => {
   const handleViewBill = () => {
     // Store bill items in localStorage for bill page
     localStorage.setItem('billItems', JSON.stringify(billItems));
+    setIsPlacingOrder(true);
     navigate(`/table/${tableId}/bill`);
+  };
+
+  const handleQuickAdd = (item: MenuItem) => {
+    handleAddToBill(item, 1);
+    // Show brief success feedback
+    // You could add a toast notification here if desired
   };
 
   // Loading state
@@ -143,11 +151,32 @@ const Menu = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="px-4 py-4">
+        <div className="px-4 py-4 relative">
           <h1 className="text-xl sm:text-2xl font-bold text-orange-600 text-center">Bella Vista</h1>
           <p className="text-sm sm:text-base text-center text-gray-600">
             {t('common.labels.table')} {tableId} • {customerName}
           </p>
+
+          {/* Orders Icon - Top Right */}
+          {tableOrders.length > 0 && (
+            <button
+              onClick={() => setShowOrderStatus(true)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-orange-100 hover:bg-orange-200 transition-colors"
+              style={{ minWidth: '44px', minHeight: '44px' }}
+              aria-label={t('navigation.orders')}
+            >
+              <div className="relative">
+                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                {tableOrders.filter(o => !['paid', 'cancelled'].includes(o.status || '')).length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {tableOrders.filter(o => !['paid', 'cancelled'].includes(o.status || '')).length}
+                  </span>
+                )}
+              </div>
+            </button>
+          )}
         </div>
       </div>
 
@@ -192,17 +221,19 @@ const Menu = () => {
                 key={item.id}
                 item={item}
                 onClick={() => handleItemClick(item)}
+                onQuickAdd={handleQuickAdd}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Floating Bill Button */}
-      <BillFloatingButton
+      {/* Fixed Order Button */}
+      <OrderButton
         itemCount={billSummary.itemCount}
         total={billSummary.total}
         onClick={handleViewBill}
+        isPlacing={isPlacingOrder}
       />
 
       {/* Item Detail Modal */}

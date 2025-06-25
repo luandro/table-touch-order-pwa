@@ -85,7 +85,8 @@
       "specialInstructions": "Special Instructions (Optional)",
       "specialInstructionsPlaceholder": "Any special requests or allergies...",
       "addToBillWithPrice": "Add to Bill - ${{price}}",
-      "rating": "Rating: {{rating}}/5"
+      "rating": "Rating: {{rating}}/5",
+      "browseMenu": "Browse Menu"
     },
     "categories": {
       "appetizers": "Appetizers",
@@ -119,7 +120,10 @@
         "preparing": "Your order is being prepared",
         "ready": "Order ready for pickup!"
       },
-      "readyForPickup": "Your order is ready for pickup!"
+      "readyForPickup": "Your order is ready for pickup!",
+      "cancelOrder": "Cancel Order",
+      "confirmCancel": "Are you sure you want to cancel this order?",
+      "placing": "Placing Order..."
     },
     "form": {
       "enterName": "Enter your name",

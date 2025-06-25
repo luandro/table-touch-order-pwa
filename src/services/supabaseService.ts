@@ -530,6 +530,22 @@ export const ordersService = {
 
     if (error) throw error;
     return data;
+  },
+
+  async cancelOrder(id: string, cancelledBy: 'customer' | 'admin' = 'customer'): Promise<Order> {
+    const status = cancelledBy === 'customer' ? 'cancelled' : 'cancelled';
+    const { data, error } = await supabase
+      .from('orders')
+      .update({
+        status: status,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 };
 

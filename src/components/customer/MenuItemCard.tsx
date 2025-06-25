@@ -3,15 +3,16 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star } from 'lucide-react';
+import { Star, Plus } from 'lucide-react';
 import { MenuItem } from '@/types';
 
 interface MenuItemCardProps {
   item: MenuItem;
   onClick: () => void;
+  onQuickAdd?: (item: MenuItem) => void;
 }
 
-const MenuItemCard = ({ item, onClick }: MenuItemCardProps) => {
+const MenuItemCard = ({ item, onClick, onQuickAdd }: MenuItemCardProps) => {
   const { t } = useTranslation();
 
   return (
@@ -29,6 +30,20 @@ const MenuItemCard = ({ item, onClick }: MenuItemCardProps) => {
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <Badge variant="destructive">{t('common.status.unavailable')}</Badge>
           </div>
+        )}
+        {/* Quick Add Button */}
+        {onQuickAdd && item.available && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onQuickAdd(item);
+            }}
+            className="absolute top-2 right-2 bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110 active:scale-95"
+            style={{ minWidth: '44px', minHeight: '44px' }}
+            aria-label={t('common.actions.addToCart')}
+          >
+            <Plus className="w-4 h-4" />
+          </button>
         )}
       </div>
       <CardContent className="p-4">

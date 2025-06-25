@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useOrdersByTable, useRealTimeOrders } from '@/hooks/useSupabaseData';
+import { useOrdersByTable, useRealTimeOrders, useCancelOrder } from '@/hooks/useSupabaseData';
 import { Clock, CheckCircle, ChefHat, Bell, X } from 'lucide-react';
 
 interface OrderStatusCardProps {
@@ -21,6 +21,7 @@ const OrderStatusCard = ({ tableId, isFloating = false, onClose }: OrderStatusCa
 
   const currentTableId = tableId || paramTableId;
   const { data: orders = [], isLoading } = useOrdersByTable(currentTableId || '');
+  const { mutate: cancelOrder, isPending: cancelling } = useCancelOrder();
 
   // Enable real-time updates
   useRealTimeOrders();
@@ -84,6 +85,25 @@ const OrderStatusCard = ({ tableId, isFloating = false, onClose }: OrderStatusCa
       case 'preparing': return '5-10 min';
       case 'ready': return 'Ready now';
       default: return '';
+    }
+  };
+
+  const handleCancelOrder = () => {
+    if (!activeOrder) return;
+
+    if (window.confirm(
+      t('customer.order.confirmCancel', {
+        defaultValue: 'Are you sure you want to cancel this order?'
+      })
+    )) {
+      cancelOrder(
+        { id: activeOrder.id, cancelledBy: 'customer' },
+        {
+          onSuccess: () => {
+            onClose?.();
+          }
+        }
+      );
     }
   };
 
@@ -193,6 +213,24 @@ const OrderStatusCard = ({ tableId, isFloating = false, onClose }: OrderStatusCa
                 {t('customer.order.readyForPickup', { defaultValue: 'Your order is ready for pickup!' })}
               </span>
             </div>
+          </div>
+        )}
+
+        {/* Cancel Order Button - Only show for pending orders */}
+        {activeOrder.status === 'pending' && (
+          <div className="mt-3">
+            <Button
+              onClick={handleCancelOrder}
+              variant="destructive"
+              size="sm"
+              disabled={cancelling}
+              className="w-full"
+            >
+              {cancelling
+                ? t('common.status.loading', { defaultValue: 'Loading...' })
+                : t('customer.order.cancelOrder', { defaultValue: 'Cancel Order' })
+              }
+            </Button>
           </div>
         )}
       </CardContent>

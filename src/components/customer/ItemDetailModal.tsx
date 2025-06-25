@@ -31,8 +31,26 @@ const ItemDetailModal = ({ item, isOpen, onClose, onAddToBill }: ItemDetailModal
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-h-screen overflow-y-auto">
-        <div className="aspect-video relative mb-4">
+      <DialogContent className="
+        w-full h-full sm:w-auto sm:h-auto
+        sm:max-w-md sm:rounded-lg
+        max-h-screen overflow-y-auto
+        bg-white p-0 sm:p-6
+        animate-in slide-in-from-bottom duration-300 sm:animate-in sm:fade-in sm:zoom-in-95
+      ">
+        {/* Mobile: Full-screen layout */}
+        <div className="p-4 sm:p-0">
+          {/* Close button for mobile */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 bg-black bg-opacity-50 text-white p-2 rounded-full sm:hidden"
+            style={{ minWidth: '44px', minHeight: '44px' }}
+          >
+            <span className="sr-only">Close</span>
+            ✕
+          </button>
+
+          <div className="aspect-video relative mb-4">
           <img
             src={item.image}
             alt={item.name}
@@ -104,6 +122,7 @@ const ItemDetailModal = ({ item, isOpen, onClose, onAddToBill }: ItemDetailModal
               {t('customer.menu.addToBillWithPrice', { price: (item.price * quantity).toFixed(2) })}
             </Button>
           </div>
+        </div>
         </div>
       </DialogContent>
     </Dialog>

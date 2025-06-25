@@ -185,6 +185,30 @@ export const useUpdateOrderStatus = () => {
   });
 };
 
+export const useCancelOrder = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, cancelledBy }: { id: string; cancelledBy?: 'customer' | 'admin' }) =>
+      ordersService.cancelOrder(id, cancelledBy),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast({
+        title: "Order Cancelled",
+        description: "Your order has been cancelled successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel order. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
 export const useUpdateTable = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();

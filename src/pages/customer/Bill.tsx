@@ -79,7 +79,10 @@ const Bill = () => {
       onSuccess: () => {
         localStorage.removeItem('billItems');
         localStorage.removeItem('customerName');
-        navigate(`/table/${tableId}`);
+        // Navigate back to menu with order placed state
+        navigate(`/table/${tableId}`, {
+          state: { orderPlaced: true }
+        });
       },
       onError: (error) => {
         console.error('Failed to create order:', error);
