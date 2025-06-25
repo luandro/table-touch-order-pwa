@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle, Clock } from 'lucide-react';
-import { useOrders } from '@/hooks/useSupabaseData';
 
 interface AnimatedNotificationBannerProps {
   pendingOrdersCount: number;
