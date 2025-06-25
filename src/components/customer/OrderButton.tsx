@@ -55,7 +55,7 @@ const OrderButton = ({ itemCount, total, onClick, isPlacing = false }: OrderButt
         </div>
 
         {/* Button text */}
-        <div className="flex items-center space-x-2 ml-8">
+        <div className="absolute left-4 flex items-center space-x-2 ml-8">
           <ShoppingCart className="w-5 h-5" />
           <span className="font-medium">
             {isPlacing

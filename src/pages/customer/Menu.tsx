@@ -118,18 +118,6 @@ const Menu = () => {
     // You could add a toast notification here if desired
   };
 
-  // Loading state
-  if (loadingCategories || loadingItems) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">{t('common.loading') || 'Loading menu...'}</p>
-        </div>
-      </div>
-    );
-  }
-
   // Error state
   if (categoriesError || itemsError) {
     return (
@@ -194,6 +182,16 @@ const Menu = () => {
       <div className="bg-white border-b">
         <Tabs value={activeCategory} onValueChange={setActiveCategory}>
           <TabsList className="w-full justify-start overflow-x-auto">
+            {/* TODO: Add skeleton state when  loadingCategories*/}
+            {loadingCategories && <TabsTrigger
+              key={1}
+              value={''}
+              className="flex items-center space-x-2 whitespace-nowrap touch-target"
+            >
+              <span>{''}</span>
+              <span className="text-sm sm:text-base">{' '}</span>
+            </TabsTrigger>
+            }
             {categories.map(category => (
               <TabsTrigger
                 key={category.id}
@@ -216,6 +214,9 @@ const Menu = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* TODO: Add skeleton state when  loadingCategories*/}
+            {loadingItems && <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+            }
             {menuItems.map(item => (
               <MenuItemCard
                 key={item.id}
@@ -243,7 +244,7 @@ const Menu = () => {
         onClose={() => setIsItemModalOpen(false)}
         onAddToBill={handleAddToBill}
       />
-    </div>
+    </div >
   );
 };
 

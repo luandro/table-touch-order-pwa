@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import NameInputModal from '@/components/customer/NameInputModal';
 import { useOrder, useTableByNumber } from '@/hooks/useSupabaseData';
+import { slugify } from '@/lib/utils';
 
 const Landing = () => {
   const [searchParams] = useSearchParams();
@@ -59,9 +60,11 @@ const Landing = () => {
   const handleNameSubmit = (name: string) => {
     // Store customer name (in real app, this would be in state management)
     localStorage.setItem('customerName', name);
-    localStorage.setItem('tableNumber', tableNumber.toString());
+    // If no table number was passed use slugified customer name as table number
+    const slugifiedName = slugify(name)
+    localStorage.setItem('tableNumber', slugifiedName);
     setShowNameModal(false);
-    navigate(`/table/${tableNumber}`);
+    navigate(`/table/${slugifiedName}`);
   };
 
   return (
