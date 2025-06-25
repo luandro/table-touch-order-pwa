@@ -6,7 +6,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import MenuItemCard from '@/components/customer/MenuItemCard';
 import BillFloatingButton from '@/components/customer/BillFloatingButton';
 import ItemDetailModal from '@/components/customer/ItemDetailModal';
-import { useMenuCategories, useMenuItemsByCategory } from '@/hooks/useSupabaseData';
+import OrderStatusCard from '@/components/customer/OrderStatusCard';
+import { useMenuCategories, useMenuItemsByCategory, useOrdersByTable, useRealTimeOrders } from '@/hooks/useSupabaseData';
 import { MenuItem, BillItem } from '@/types';
 import type { MenuCategory as SupabaseMenuCategory, MenuItem as SupabaseMenuItem } from '@/types/supabase';
 
@@ -18,12 +19,26 @@ const Menu = () => {
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
+  const [showOrderStatus, setShowOrderStatus] = useState(false);
 
   const customerName = localStorage.getItem('customerName') || t('common.labels.customer');
 
   // Fetch data from Supabase
   const { data: supabaseCategories = [], isLoading: loadingCategories, error: categoriesError } = useMenuCategories();
   const { data: supabaseMenuItems = [], isLoading: loadingItems, error: itemsError } = useMenuItemsByCategory(activeCategory);
+  const { data: tableOrders = [] } = useOrdersByTable(tableId || '');
+
+  // Enable real-time updates for orders
+  useRealTimeOrders();
+
+  // Check if there are active orders to show status
+  const hasActiveOrders = tableOrders.some(order =>
+    !['paid', 'cancelled'].includes(order.status || '')
+  );
+
+  useEffect(() => {
+    setShowOrderStatus(hasActiveOrders);
+  }, [hasActiveOrders]);
 
   // Transform Supabase data to frontend format
   const categories = useMemo(() => {
@@ -129,12 +144,22 @@ const Menu = () => {
       {/* Header */}
       <div className="bg-white shadow-sm sticky top-0 z-40">
         <div className="px-4 py-4">
-          <h1 className="text-2xl font-bold text-orange-600 text-center">Bella Vista</h1>
-          <p className="text-center text-gray-600">
+          <h1 className="text-xl sm:text-2xl font-bold text-orange-600 text-center">Bella Vista</h1>
+          <p className="text-sm sm:text-base text-center text-gray-600">
             {t('common.labels.table')} {tableId} • {customerName}
           </p>
         </div>
       </div>
+
+      {/* Order Status Card */}
+      {showOrderStatus && (
+        <div className="p-4 pb-0">
+          <OrderStatusCard
+            tableId={tableId}
+            onClose={() => setShowOrderStatus(false)}
+          />
+        </div>
+      )}
 
       {/* Category Tabs */}
       <div className="bg-white border-b">
@@ -144,10 +169,10 @@ const Menu = () => {
               <TabsTrigger
                 key={category.id}
                 value={category.id}
-                className="flex items-center space-x-2 whitespace-nowrap"
+                className="flex items-center space-x-2 whitespace-nowrap touch-target"
               >
                 <span>{category.icon}</span>
-                <span>{category.name}</span>
+                <span className="text-sm sm:text-base">{category.name}</span>
               </TabsTrigger>
             ))}
           </TabsList>
@@ -156,15 +181,21 @@ const Menu = () => {
 
       {/* Menu Items */}
       <div className="p-4 pb-24">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {menuItems.map(item => (
-            <MenuItemCard
-              key={item.id}
-              item={item}
-              onClick={() => handleItemClick(item)}
-            />
-          ))}
-        </div>
+        {menuItems.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <p className="text-sm sm:text-base">{t('admin.menu.noItems')}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {menuItems.map(item => (
+              <MenuItemCard
+                key={item.id}
+                item={item}
+                onClick={() => handleItemClick(item)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Floating Bill Button */}

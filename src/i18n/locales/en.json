@@ -111,7 +111,15 @@
       "details": "Order Details",
       "notFound": "Order Not Found",
       "notFoundMessage": "The order ID you're looking for doesn't exist.",
-      "orderNumber": "Order #{{orderId}}"
+      "orderNumber": "Order #{{orderId}}",
+      "tracking": "Order Status",
+      "status": {
+        "pending": "Order received, waiting for confirmation",
+        "confirmed": "Order confirmed, being prepared",
+        "preparing": "Your order is being prepared",
+        "ready": "Order ready for pickup!"
+      },
+      "readyForPickup": "Your order is ready for pickup!"
     },
     "form": {
       "enterName": "Enter your name",
@@ -136,6 +144,8 @@
       "subtitle": "Restaurant Management Dashboard",
       "newOrdersAlert": "{{count}} new order waiting for confirmation",
       "newOrdersAlert_plural": "{{count}} new orders waiting for confirmation",
+      "clickToView": "Click to view details",
+      "noTables": "No tables available",
       "stats": {
         "occupiedTables": "Occupied Tables",
         "pendingOrders": "Pending Orders",

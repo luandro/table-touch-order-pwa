@@ -108,7 +108,7 @@ export const tablesService = {
           .select('table_number')
           .order('table_number', { ascending: false })
           .limit(1);
-        
+
         const maxTableNumber = existingTables?.[0]?.table_number || 0;
         newTableNumber = maxTableNumber + 1;
       }
@@ -169,7 +169,7 @@ export const tablesService = {
     const cancelledOrders: Order[] = [];
     if (activeOrders && activeOrders.length > 0) {
       const orderIds = activeOrders.map(order => order.id);
-      
+
       const { data: updatedOrders } = await supabase
         .from('orders')
         .update({
