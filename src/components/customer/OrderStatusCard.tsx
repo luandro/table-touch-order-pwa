@@ -92,7 +92,7 @@ const OrderStatusCard = ({ tableId, isFloating = false, onClose }: OrderStatusCa
   }
 
   const cardClasses = isFloating
-    ? 'fixed bottom-4 left-4 right-4 z-50 shadow-lg'
+    ? 'fixed bottom-4 left-4 right-4 z-50 shadow-lg pb-safe'
     : 'w-full';
 
   return (

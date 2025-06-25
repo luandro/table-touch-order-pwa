@@ -279,6 +279,11 @@
     font-size: 16px;
   }
 
+  /* Safe area support for mobile devices */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+
   /* Notification banner animations */
   .notification-banner-enter {
     animation: notification-slide-down 0.4s ease-out;
