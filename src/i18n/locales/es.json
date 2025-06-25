@@ -110,7 +110,15 @@
       "details": "Detalles del pedido",
       "notFound": "Pedido no encontrado",
       "notFoundMessage": "El ID de pedido que buscas no existe.",
-      "orderNumber": "Pedido #{{orderId}}"
+      "orderNumber": "Pedido #{{orderId}}",
+      "tracking": "Estado del Pedido",
+      "status": {
+        "pending": "Pedido recibido, esperando confirmación",
+        "confirmed": "Pedido confirmado, siendo preparado",
+        "preparing": "Tu pedido está siendo preparado",
+        "ready": "¡Pedido listo para recoger!"
+      },
+      "readyForPickup": "¡Tu pedido está listo para recoger!"
     },
     "form": {
       "enterName": "Ingresa tu nombre",
@@ -135,6 +143,8 @@
       "subtitle": "Tablero de gestión del restaurante",
       "newOrdersAlert": "{{count}} nuevo pedido esperando confirmación",
       "newOrdersAlert_plural": "{{count}} nuevos pedidos esperando confirmación",
+      "clickToView": "Haz clic para ver detalles",
+      "noTables": "No hay mesas disponibles",
       "stats": {
         "occupiedTables": "Mesas ocupadas",
         "pendingOrders": "Pedidos pendientes",
