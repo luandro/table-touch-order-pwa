@@ -1,23 +1,35 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Plus, Edit, Trash2, GripVertical } from 'lucide-react';
-import { useCategoriesWithItemCount, useDeleteCategory, useUpdateCategory, useReorderCategories } from '@/hooks/useSupabaseData';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import type { MenuCategory } from '@/types/supabase';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Plus, Edit, Trash2, GripVertical } from "lucide-react";
+import {
+  useCategoriesWithItemCount,
+  useDeleteCategory,
+  useUpdateCategory,
+  useReorderCategories,
+} from "@/hooks/useSupabaseData";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import type { MenuCategory } from "@/types/supabase";
 
 const CategoriesManagement = () => {
   const navigate = useNavigate();
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; category: MenuCategory | null }>({
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    category: MenuCategory | null;
+  }>({
     open: false,
-    category: null
+    category: null,
   });
 
   // Fetch categories with item counts
-  const { data: categories = [], isLoading, error } = useCategoriesWithItemCount();
+  const {
+    data: categories = [],
+    isLoading,
+    error,
+  } = useCategoriesWithItemCount();
 
   // Mutations
   const deleteMutation = useDeleteCategory();
@@ -40,7 +52,7 @@ const CategoriesManagement = () => {
   const handleToggleActive = (category: MenuCategory) => {
     updateMutation.mutate({
       id: category.id,
-      updates: { active: !category.active }
+      updates: { active: !category.active },
     });
   };
 
@@ -48,7 +60,7 @@ const CategoriesManagement = () => {
   // This would require adding a drag and drop library like @dnd-kit/core
   const handleReorder = (draggedId: string, targetId: string) => {
     // Implementation would go here
-    console.log('Reorder:', draggedId, 'to', targetId);
+    console.log("Reorder:", draggedId, "to", targetId);
   };
 
   // Loading state
@@ -90,20 +102,22 @@ const CategoriesManagement = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/admin/menu')}
+                onClick={() => navigate("/admin/menu")}
                 className="p-0 hover:bg-transparent"
               >
                 <ArrowLeft className="w-4 h-4 text-orange-600" />
               </Button>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-orange-600">Category Management</h1>
+              <h1 className="text-xl font-bold text-orange-600">
+                Category Management
+              </h1>
               <p className="text-gray-600">Manage menu categories</p>
             </div>
           </div>
           <Button
             className="bg-orange-500 hover:bg-orange-600 hidden sm:flex"
-            onClick={() => navigate('/admin/menu/categories/new')}
+            onClick={() => navigate("/admin/menu/categories/new")}
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Category
@@ -118,10 +132,12 @@ const CategoriesManagement = () => {
             <Card>
               <CardContent className="p-8 text-center">
                 <p className="text-gray-500 text-lg">No categories found</p>
-                <p className="text-gray-400 text-sm mt-2">Create your first category to organize your menu</p>
+                <p className="text-gray-400 text-sm mt-2">
+                  Create your first category to organize your menu
+                </p>
                 <Button
                   className="mt-4 bg-orange-500 hover:bg-orange-600"
-                  onClick={() => navigate('/admin/menu/categories/new')}
+                  onClick={() => navigate("/admin/menu/categories/new")}
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Create First Category
@@ -130,7 +146,10 @@ const CategoriesManagement = () => {
             </Card>
           ) : (
             categories.map((category) => (
-              <Card key={category.id} className="hover:shadow-md transition-shadow">
+              <Card
+                key={category.id}
+                className="hover:shadow-md transition-shadow"
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-4">
                     {/* Drag Handle */}
@@ -145,9 +164,14 @@ const CategoriesManagement = () => {
                           <h3 className="font-bold text-lg">{category.name}</h3>
                           <div className="flex items-center space-x-3 mt-2">
                             <Badge variant="outline">
-                              {category.item_count} {category.item_count === 1 ? 'item' : 'items'}
+                              {category.item_count}{" "}
+                              {category.item_count === 1 ? "item" : "items"}
                             </Badge>
-                            <Badge variant={category.active ? "default" : "secondary"}>
+                            <Badge
+                              variant={
+                                category.active ? "default" : "secondary"
+                              }
+                            >
                               {category.active ? "Active" : "Inactive"}
                             </Badge>
                             <span className="text-sm text-gray-500">
@@ -162,7 +186,9 @@ const CategoriesManagement = () => {
                           <div className="flex items-center space-x-2">
                             <Switch
                               checked={category.active}
-                              onCheckedChange={() => handleToggleActive(category)}
+                              onCheckedChange={() =>
+                                handleToggleActive(category)
+                              }
                               disabled={updateMutation.isPending}
                             />
                           </div>
@@ -171,7 +197,11 @@ const CategoriesManagement = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => navigate(`/admin/menu/categories/edit/${category.id}`)}
+                            onClick={() =>
+                              navigate(
+                                `/admin/menu/categories/edit/${category.id}`,
+                              )
+                            }
                             title="Edit category"
                           >
                             <Edit className="w-4 h-4" />
@@ -206,7 +236,7 @@ const CategoriesManagement = () => {
                      w-14 h-14 rounded-full shadow-lg hover:shadow-xl
                      transform transition-all duration-200 ease-in-out
                      hover:scale-105 active:scale-95 touch-target"
-          onClick={() => navigate('/admin/menu/categories/new')}
+          onClick={() => navigate("/admin/menu/categories/new")}
         >
           <Plus className="w-6 h-6" />
         </Button>

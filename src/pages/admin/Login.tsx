@@ -1,13 +1,12 @@
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -15,14 +14,14 @@ const AdminLogin = () => {
   const { signIn, signUp, user, loading } = useAuth();
   const { toast } = useToast();
 
-  const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
 
   // Redirect if already authenticated
   useEffect(() => {
     if (user && !loading) {
-      navigate('/admin');
+      navigate("/admin");
     }
   }, [user, loading, navigate]);
 
@@ -77,34 +76,40 @@ const AdminLogin = () => {
             <span className="text-white text-2xl font-bold">BV</span>
           </div>
           <CardTitle className="text-2xl text-orange-600">
-            {isSignUp ? 'Create Admin Account' : t('admin.login.title')}
+            {isSignUp ? "Create Admin Account" : t("admin.login.title")}
           </CardTitle>
           <p className="text-gray-600">
-            {isSignUp ? 'Register as restaurant administrator' : t('admin.login.subtitle')}
+            {isSignUp
+              ? "Register as restaurant administrator"
+              : t("admin.login.subtitle")}
           </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="email">{t('common.labels.email')}</Label>
+              <Label htmlFor="email">{t("common.labels.email")}</Label>
               <Input
                 id="email"
                 type="email"
                 value={credentials.email}
-                onChange={(e) => setCredentials({...credentials, email: e.target.value})}
-                placeholder={t('admin.login.emailPlaceholder')}
+                onChange={(e) =>
+                  setCredentials({ ...credentials, email: e.target.value })
+                }
+                placeholder={t("admin.login.emailPlaceholder")}
                 required
                 disabled={isLoading}
               />
             </div>
             <div>
-              <Label htmlFor="password">{t('common.labels.password')}</Label>
+              <Label htmlFor="password">{t("common.labels.password")}</Label>
               <Input
                 id="password"
                 type="password"
                 value={credentials.password}
-                onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-                placeholder={t('admin.login.passwordPlaceholder')}
+                onChange={(e) =>
+                  setCredentials({ ...credentials, password: e.target.value })
+                }
+                placeholder={t("admin.login.passwordPlaceholder")}
                 required
                 disabled={isLoading}
                 minLength={6}
@@ -121,8 +126,10 @@ const AdminLogin = () => {
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   Loading...
                 </div>
+              ) : isSignUp ? (
+                "Create Account"
               ) : (
-                isSignUp ? 'Create Account' : t('common.buttons.login')
+                t("common.buttons.login")
               )}
             </Button>
 
@@ -133,14 +140,18 @@ const AdminLogin = () => {
               onClick={() => setIsSignUp(!isSignUp)}
               disabled={isLoading}
             >
-              {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+              {isSignUp
+                ? "Already have an account? Sign In"
+                : "Need an account? Sign Up"}
             </Button>
           </form>
 
           {!isSignUp && (
             <div className="mt-4 p-3 bg-gray-100 rounded text-sm">
               <p className="font-medium">Demo Instructions:</p>
-              <p>Create a new admin account using the "Sign Up" option above.</p>
+              <p>
+                Create a new admin account using the "Sign Up" option above.
+              </p>
               <p>Use any email and a password with at least 6 characters.</p>
             </div>
           )}

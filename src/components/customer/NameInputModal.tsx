@@ -1,10 +1,14 @@
-
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 interface NameInputModalProps {
   isOpen: boolean;
@@ -12,15 +16,19 @@ interface NameInputModalProps {
   onSubmit: (name: string) => void;
 }
 
-const NameInputModal = ({ isOpen, tableNumber, onSubmit }: NameInputModalProps) => {
+const NameInputModal = ({
+  isOpen,
+  tableNumber,
+  onSubmit,
+}: NameInputModalProps) => {
   const { t } = useTranslation();
-  const [name, setName] = useState('');
-  const [error, setError] = useState('');
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim().length < 2) {
-      setError(t('customer.form.nameRequired'));
+      setError(t("customer.form.nameRequired"));
       return;
     }
     onSubmit(name.trim());
@@ -31,26 +39,28 @@ const NameInputModal = ({ isOpen, tableNumber, onSubmit }: NameInputModalProps) 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold text-orange-600">
-            {t('customer.welcome.title', { restaurantName: 'Bella Vista' })}
+            {t("customer.welcome.title", { restaurantName: "Bella Vista" })}
           </DialogTitle>
         </DialogHeader>
         <div className="text-center mb-6">
-          <p className="text-gray-600">{t('customer.welcome.tableNumber', { number: tableNumber })}</p>
+          <p className="text-gray-600">
+            {t("customer.welcome.tableNumber", { number: tableNumber })}
+          </p>
           <p className="text-sm text-gray-500 mt-2">
-            {t('customer.welcome.subtitle')}
+            {t("customer.welcome.subtitle")}
           </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="customerName">{t('customer.form.nameLabel')}</Label>
+            <Label htmlFor="customerName">{t("customer.form.nameLabel")}</Label>
             <Input
               id="customerName"
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
-                setError('');
+                setError("");
               }}
-              placeholder={t('customer.form.namePlaceholder')}
+              placeholder={t("customer.form.namePlaceholder")}
               className="mt-1"
             />
             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
@@ -60,7 +70,7 @@ const NameInputModal = ({ isOpen, tableNumber, onSubmit }: NameInputModalProps) 
             className="w-full bg-orange-500 hover:bg-orange-600"
             size="lg"
           >
-            {t('customer.welcome.startOrder')}
+            {t("customer.welcome.startOrder")}
           </Button>
         </form>
       </DialogContent>

@@ -1,4 +1,3 @@
-
 export interface MenuItem {
   id: string;
   name: string;
@@ -30,13 +29,13 @@ export interface Bill {
   items: BillItem[];
   subtotal: number;
   total: number;
-  status: 'active' | 'placed' | 'completed' | 'cancelled';
+  status: "active" | "placed" | "completed" | "cancelled";
   createdAt: Date;
 }
 
 export interface Table {
   id: number;
-  status: 'free' | 'occupied' | 'pending' | 'reserved';
+  status: "free" | "occupied" | "pending" | "reserved";
   customerName?: string;
   currentBill?: Bill;
   lastActivity?: Date;
@@ -48,6 +47,6 @@ export interface Order {
   customerName: string;
   items: BillItem[];
   total: number;
-  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'served';
+  status: "pending" | "confirmed" | "preparing" | "ready" | "served";
   timestamp: Date;
 }

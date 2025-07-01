@@ -4,7 +4,7 @@
 export const testScenarios = {
   // Test 1: Dashboard Load
   dashboardLoad: async () => {
-    console.log('🧪 Testing Dashboard Load...');
+    console.log("🧪 Testing Dashboard Load...");
     const startTime = performance.now();
 
     // Check if all statistics load with real data
@@ -17,33 +17,40 @@ export const testScenarios = {
     return {
       success: true,
       loadTime,
-      statsCount: statsCards.length
+      statsCount: statsCards.length,
     };
   },
 
   // Test 2: New Order Notification
   newOrderNotification: () => {
-    console.log('🧪 Testing New Order Notification...');
+    console.log("🧪 Testing New Order Notification...");
 
-    const notificationBanner = document.querySelector('[data-testid="notification-banner"]');
-    const pulseAnimation = notificationBanner?.classList.contains('notification-pulse');
+    const notificationBanner = document.querySelector(
+      '[data-testid="notification-banner"]',
+    );
+    const pulseAnimation =
+      notificationBanner?.classList.contains("notification-pulse");
 
-    console.log(`🔔 Notification banner: ${notificationBanner ? 'Found' : 'Not found'}`);
-    console.log(`✨ Pulse animation: ${pulseAnimation ? 'Active' : 'Inactive'}`);
+    console.log(
+      `🔔 Notification banner: ${notificationBanner ? "Found" : "Not found"}`,
+    );
+    console.log(
+      `✨ Pulse animation: ${pulseAnimation ? "Active" : "Inactive"}`,
+    );
 
     return {
       success: !!notificationBanner,
-      hasAnimation: !!pulseAnimation
+      hasAnimation: !!pulseAnimation,
     };
   },
 
   // Test 3: Mobile Experience
   mobileExperience: () => {
-    console.log('🧪 Testing Mobile Experience...');
+    console.log("🧪 Testing Mobile Experience...");
 
-    const mobileButtons = document.querySelectorAll('.mobile-button');
-    const touchTargets = document.querySelectorAll('.touch-target');
-    const invalidButtons = Array.from(mobileButtons).filter(btn => {
+    const mobileButtons = document.querySelectorAll(".mobile-button");
+    const touchTargets = document.querySelectorAll(".touch-target");
+    const invalidButtons = Array.from(mobileButtons).filter((btn) => {
       const rect = btn.getBoundingClientRect();
       return rect.height < 44 || rect.width < 44;
     });
@@ -56,13 +63,13 @@ export const testScenarios = {
       success: invalidButtons.length === 0,
       mobileButtonsCount: mobileButtons.length,
       touchTargetsCount: touchTargets.length,
-      invalidButtonsCount: invalidButtons.length
+      invalidButtonsCount: invalidButtons.length,
     };
   },
 
   // Test 4: Real-time Updates
   realTimeUpdates: (callback: (result: any) => void) => {
-    console.log('🧪 Testing Real-time Updates...');
+    console.log("🧪 Testing Real-time Updates...");
 
     let updateCount = 0;
     const startTime = Date.now();
@@ -70,18 +77,23 @@ export const testScenarios = {
     // Monitor DOM changes for statistics updates
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.type === 'childList' || mutation.type === 'characterData') {
+        if (
+          mutation.type === "childList" ||
+          mutation.type === "characterData"
+        ) {
           updateCount++;
         }
       });
     });
 
-    const statsContainer = document.querySelector('[data-testid="stats-container"]');
+    const statsContainer = document.querySelector(
+      '[data-testid="stats-container"]',
+    );
     if (statsContainer) {
       observer.observe(statsContainer, {
         childList: true,
         subtree: true,
-        characterData: true
+        characterData: true,
       });
     }
 
@@ -95,16 +107,18 @@ export const testScenarios = {
       callback({
         success: updateCount > 0,
         updateCount,
-        duration
+        duration,
       });
     }, 5000);
   },
 
   // Test 5: Animation Performance
   animationPerformance: () => {
-    console.log('🧪 Testing Animation Performance...');
+    console.log("🧪 Testing Animation Performance...");
 
-    const animatedElements = document.querySelectorAll('.notification-pulse, .count-up, .table-status-transition');
+    const animatedElements = document.querySelectorAll(
+      ".notification-pulse, .count-up, .table-status-transition",
+    );
     let performanceIssues = 0;
 
     animatedElements.forEach((element) => {
@@ -113,7 +127,7 @@ export const testScenarios = {
       const transform = computedStyle.transform;
 
       // Check for performance optimizations
-      if (willChange === 'auto' && transform !== 'none') {
+      if (willChange === "auto" && transform !== "none") {
         performanceIssues++;
       }
     });
@@ -124,26 +138,26 @@ export const testScenarios = {
     return {
       success: performanceIssues === 0,
       animatedElementsCount: animatedElements.length,
-      performanceIssues
+      performanceIssues,
     };
-  }
+  },
 };
 
 // Run all tests
 export const runAllTests = async () => {
-  console.log('🚀 Starting Dashboard Tests...');
+  console.log("🚀 Starting Dashboard Tests...");
 
   const results = {
     dashboardLoad: await testScenarios.dashboardLoad(),
     newOrderNotification: testScenarios.newOrderNotification(),
     mobileExperience: testScenarios.mobileExperience(),
-    animationPerformance: testScenarios.animationPerformance()
+    animationPerformance: testScenarios.animationPerformance(),
   };
 
   // Real-time updates test (async)
   testScenarios.realTimeUpdates((realTimeResult) => {
     results.realTimeUpdates = realTimeResult;
-    console.log('📊 All Tests Complete:', results);
+    console.log("📊 All Tests Complete:", results);
   });
 
   return results;
@@ -151,28 +165,30 @@ export const runAllTests = async () => {
 
 // Development helper to add test attributes
 export const addTestAttributes = () => {
-  if (process.env.NODE_ENV !== 'development') return;
+  if (process.env.NODE_ENV !== "development") return;
 
   // Add test IDs to elements
   const statsCards = document.querySelectorAll('[class*="AnimatedStatsCard"]');
   statsCards.forEach((card, index) => {
-    card.setAttribute('data-testid', `stats-card-${index}`);
+    card.setAttribute("data-testid", `stats-card-${index}`);
   });
 
-  const notificationBanner = document.querySelector('[class*="AnimatedNotificationBanner"]');
+  const notificationBanner = document.querySelector(
+    '[class*="AnimatedNotificationBanner"]',
+  );
   if (notificationBanner) {
-    notificationBanner.setAttribute('data-testid', 'notification-banner');
+    notificationBanner.setAttribute("data-testid", "notification-banner");
   }
 
   const statsContainer = document.querySelector('[class*="stats-container"]');
   if (statsContainer) {
-    statsContainer.setAttribute('data-testid', 'stats-container');
+    statsContainer.setAttribute("data-testid", "stats-container");
   }
 };
 
 // Performance monitoring
 export const monitorPerformance = () => {
-  if (typeof window !== 'undefined' && 'performance' in window) {
+  if (typeof window !== "undefined" && "performance" in window) {
     // Monitor animation frames
     let frameCount = 0;
     let lastTime = performance.now();
