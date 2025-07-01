@@ -51,6 +51,9 @@ const Menu = () => {
   } = useMenuItemsByCategory(activeCategory);
   const { data: tableOrders = [] } = useOrdersByTable(actualTableId || "");
 
+  // Check if this is generic mode or resolve table ID
+  const isGenericMode = tableId === "generic";
+
   // Enable real-time updates for orders only when we have a table and it's not generic mode
   useRealTimeOrders(!!actualTableId && !isGenericMode);
 
@@ -58,9 +61,6 @@ const Menu = () => {
   const hasActiveOrders = tableOrders.some(
     (order) => !["paid", "cancelled"].includes(order.status || ""),
   );
-
-  // Check if this is generic mode or resolve table ID
-  const isGenericMode = tableId === "generic";
 
   useEffect(() => {
     const resolveTableId = async () => {
