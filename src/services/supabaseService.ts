@@ -569,7 +569,6 @@ export const ordersService = {
   },
 
   async cancelOrder(id: string, cancelledBy: 'customer' | 'admin' = 'customer'): Promise<Order> {
-    const status = cancelledBy === 'customer' ? 'cancelled' : 'cancelled';
     const { data, error } = await supabase
       .from('orders')
       .update({
