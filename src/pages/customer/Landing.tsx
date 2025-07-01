@@ -1,9 +1,9 @@
-
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import NameInputModal from '@/components/customer/NameInputModal';
-import { useOrder, useTableByNumber } from '@/hooks/useSupabaseData';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import NameInputModal from "@/components/customer/NameInputModal";
+import { useOrder, useTableByNumber } from "@/hooks/useSupabaseData";
+import { slugify } from "@/lib/utils";
 
 const Landing = () => {
   const [searchParams] = useSearchParams();
@@ -12,18 +12,26 @@ const Landing = () => {
   const [showNameModal, setShowNameModal] = useState(false);
   const [tableNumber, setTableNumber] = useState(99);
 
-  const orderId = searchParams.get('orderId');
-  const tableParam = searchParams.get('table');
+  const orderId = searchParams.get("orderId");
+  const tableParam = searchParams.get("table");
   const tableNum = tableParam ? parseInt(tableParam) : null;
 
   // Fetch order if orderId is provided
-  const { data: existingOrder, isLoading: orderLoading, error: orderError } = useOrder(orderId || '', {
-    enabled: !!orderId
+  const {
+    data: existingOrder,
+    isLoading: orderLoading,
+    error: orderError,
+  } = useOrder(orderId || "", {
+    enabled: !!orderId,
   });
 
   // Fetch table if table number is provided
-  const { data: table, isLoading: tableLoading, error: tableError } = useTableByNumber(tableNum || 0, {
-    enabled: !!tableNum
+  const {
+    data: table,
+    isLoading: tableLoading,
+    error: tableError,
+  } = useTableByNumber(tableNum || 0, {
+    enabled: !!tableNum,
   });
 
   useEffect(() => {
@@ -33,42 +41,52 @@ const Landing = () => {
       if (existingOrder) {
         navigate(`/order/${orderId}`);
       } else if (orderError || (!existingOrder && !orderLoading)) {
-        navigate('/'); // Order not found, redirect to default
+        // Order not found, redirect to generic menu
+        navigate("/table/generic");
       }
     } else if (tableParam) {
       if (tableLoading) return; // Wait for table query to complete
 
       if (table) {
+        // Valid table found, show name input
         setTableNumber(table.table_number);
         setShowNameModal(true);
       } else if (tableError || (!table && !tableLoading)) {
-        // Table not found, but still allow access with the number provided
-        if (tableNum && tableNum > 0) {
-          setTableNumber(tableNum);
-          setShowNameModal(true);
-        } else {
-          setShowNameModal(true);
-        }
+        // Table not found, redirect to generic menu
+        navigate("/table/generic");
       }
     } else {
-      // Default to table 99
-      setShowNameModal(true);
+      // No table parameter provided, redirect to generic menu
+      navigate("/table/generic");
     }
-  }, [orderId, existingOrder, orderLoading, orderError, tableParam, table, tableLoading, tableError, tableNum, navigate]);
+  }, [
+    orderId,
+    existingOrder,
+    orderLoading,
+    orderError,
+    tableParam,
+    table,
+    tableLoading,
+    tableError,
+    tableNum,
+    navigate,
+  ]);
 
   const handleNameSubmit = (name: string) => {
     // Store customer name (in real app, this would be in state management)
-    localStorage.setItem('customerName', name);
-    localStorage.setItem('tableNumber', tableNumber.toString());
+    localStorage.setItem("customerName", name);
+    // If no table number was passed use slugified customer name as table number
+    const slugifiedName = slugify(name);
+    localStorage.setItem("tableNumber", slugifiedName);
     setShowNameModal(false);
-    navigate(`/table/${tableNumber}`);
+    navigate(`/table/${slugifiedName}`);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-orange-600 mb-4">Bella Vista</h1>
-        <p className="text-gray-600">{t('customer.welcome.loading')}</p>
+        <p className="text-gray-600">{t("customer.welcome.loading")}</p>
       </div>
 
       <NameInputModal

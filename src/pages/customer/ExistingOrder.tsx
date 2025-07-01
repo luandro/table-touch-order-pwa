@@ -1,20 +1,35 @@
-
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft } from 'lucide-react';
-import { useOrder, useTable } from '@/hooks/useSupabaseData';
-import { transformSupabaseOrder } from '@/utils/dataTransform';
+import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft } from "lucide-react";
+import { useOrder, useTable, useCancelOrder } from "@/hooks/useSupabaseData";
+import { transformSupabaseOrder } from "@/utils/dataTransform";
 
 const ExistingOrder = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
 
   // Fetch order from Supabase
-  const { data: supabaseOrder, isLoading: orderLoading, error: orderError } = useOrder(orderId || '');
-  const { data: table } = useTable(supabaseOrder?.table_id || '');
+  const {
+    data: supabaseOrder,
+    isLoading: orderLoading,
+    error: orderError,
+  } = useOrder(orderId || "");
+  const { data: table } = useTable(supabaseOrder?.table_id || "");
+  const { mutate: cancelOrder, isPending: cancelling } = useCancelOrder();
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   // Loading state
   if (orderLoading) {
@@ -35,8 +50,10 @@ const ExistingOrder = () => {
         <Card>
           <CardContent className="pt-6 text-center">
             <h2 className="text-xl font-bold mb-4">Order Not Found</h2>
-            <p className="text-gray-600 mb-4">The order ID you're looking for doesn't exist.</p>
-            <Button onClick={() => navigate('/')}>Go to Home</Button>
+            <p className="text-gray-600 mb-4">
+              The order ID you're looking for doesn't exist.
+            </p>
+            <Button onClick={() => navigate("/")}>Go to Home</Button>
           </CardContent>
         </Card>
       </div>
@@ -47,36 +64,71 @@ const ExistingOrder = () => {
   const bill = {
     id: supabaseOrder.id,
     tableNumber: table?.table_number || 0,
-    customerName: supabaseOrder.bill_name || 'Customer',
-    items: Array.isArray(supabaseOrder.items) ? (supabaseOrder.items as any[]).map((item: any) => ({
-      id: item.item_id || item.id || Math.random().toString(),
-      menuItem: {
-        id: item.item_id || item.id || '',
-        name: item.name || '',
-        description: item.description || '',
-        price: parseFloat(item.price?.toString() || '0'),
-        category: item.category || '',
-        image: item.image || `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 100)}`,
-        rating: 4.5,
-        available: true,
-      },
-      quantity: parseInt(item.quantity?.toString() || '1'),
-      notes: item.notes || undefined,
-    })) : [],
+    customerName: supabaseOrder.bill_name || "Customer",
+    items: Array.isArray(supabaseOrder.items)
+      ? (supabaseOrder.items as any[]).map((item: any) => ({
+          id: item.item_id || item.id || Math.random().toString(),
+          menuItem: {
+            id: item.item_id || item.id || "",
+            name: item.name || "",
+            description: item.description || "",
+            price: parseFloat(item.price?.toString() || "0"),
+            category: item.category || "",
+            image:
+              item.image ||
+              `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 100)}`,
+            rating: 4.5,
+            available: true,
+          },
+          quantity: parseInt(item.quantity?.toString() || "1"),
+          notes: item.notes || undefined,
+        }))
+      : [],
     subtotal: supabaseOrder.subtotal,
     total: supabaseOrder.total,
-    status: supabaseOrder.status || 'pending',
-    createdAt: new Date(supabaseOrder.created_at || '')
+    status: supabaseOrder.status || "pending",
+    createdAt: new Date(supabaseOrder.created_at || ""),
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'active': return <Badge className="bg-blue-500">Active</Badge>;
-      case 'placed': return <Badge className="bg-yellow-500">Placed</Badge>;
-      case 'completed': return <Badge className="bg-green-500">Completed</Badge>;
-      case 'cancelled': return <Badge variant="destructive">Cancelled</Badge>;
-      default: return <Badge>Unknown</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-500">Pending</Badge>;
+      case "confirmed":
+        return <Badge className="bg-blue-500">Confirmed</Badge>;
+      case "preparing":
+        return <Badge className="bg-orange-500">Preparing</Badge>;
+      case "ready":
+        return <Badge className="bg-green-500">Ready</Badge>;
+      case "served":
+        return <Badge className="bg-gray-500">Served</Badge>;
+      case "cancelled":
+        return <Badge variant="destructive">Cancelled</Badge>;
+      default:
+        return <Badge>Unknown</Badge>;
     }
+  };
+
+  const handleCancelOrder = () => {
+    if (!supabaseOrder) return;
+    setShowCancelDialog(true);
+  };
+
+  const handleConfirmCancel = () => {
+    if (!supabaseOrder) return;
+    
+    cancelOrder(
+      { id: supabaseOrder.id },
+      {
+        onSuccess: () => {
+          setShowCancelDialog(false);
+          navigate("/");
+        },
+        onError: () => {
+          setShowCancelDialog(false);
+        },
+      },
+    );
   };
 
   return (
@@ -86,14 +138,18 @@ const ExistingOrder = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="mr-3"
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-orange-600">Order #{orderId}</h1>
-            <p className="text-gray-600">Table {bill.tableNumber} • {bill.customerName}</p>
+            <h1 className="text-xl font-bold text-orange-600">
+              Order #{orderId}
+            </h1>
+            <p className="text-gray-600">
+              Table {bill.tableNumber} • {bill.customerName}
+            </p>
           </div>
           {getStatusBadge(bill.status)}
         </div>
@@ -105,8 +161,11 @@ const ExistingOrder = () => {
             <CardTitle>Order Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {bill.items.map(item => (
-              <div key={item.id} className="flex items-center space-x-4 py-3 border-b last:border-b-0">
+            {bill.items.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center space-x-4 py-3 border-b last:border-b-0"
+              >
                 <img
                   src={item.menuItem.image}
                   alt={item.menuItem.name}
@@ -114,9 +173,13 @@ const ExistingOrder = () => {
                 />
                 <div className="flex-1">
                   <h3 className="font-medium">{item.menuItem.name}</h3>
-                  <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                  <p className="text-sm text-gray-600">
+                    Quantity: {item.quantity}
+                  </p>
                   {item.notes && (
-                    <p className="text-sm text-gray-500 italic">Note: {item.notes}</p>
+                    <p className="text-sm text-gray-500 italic">
+                      Note: {item.notes}
+                    </p>
                   )}
                 </div>
                 <div className="text-right font-medium">
@@ -128,22 +191,61 @@ const ExistingOrder = () => {
             <div className="border-t pt-4">
               <div className="flex justify-between font-bold text-lg">
                 <span>Total:</span>
-                <span className="text-orange-600">${bill.total.toFixed(2)}</span>
+                <span className="text-orange-600">
+                  ${bill.total.toFixed(2)}
+                </span>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {bill.status === 'active' && (
-          <Button
-            onClick={() => navigate(`/table/${bill.tableNumber}/bill`)}
-            className="w-full bg-orange-500 hover:bg-orange-600"
-            size="lg"
-          >
-            Continue Editing Order
-          </Button>
-        )}
+        {/* Action buttons based on order status */}
+        <div className="space-y-3">
+          {bill.status === "pending" && (
+            <Button
+              onClick={handleCancelOrder}
+              variant="destructive"
+              className="w-full"
+              size="lg"
+              disabled={cancelling}
+            >
+              {cancelling ? "Cancelling..." : "Cancel Order"}
+            </Button>
+          )}
+
+          {bill.status === "active" && (
+            <Button
+              onClick={() => navigate(`/table/${bill.tableNumber}/bill`)}
+              className="w-full bg-orange-500 hover:bg-orange-600"
+              size="lg"
+            >
+              Continue Editing Order
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Cancel Order Confirmation Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Order</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this order? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cancelling}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmCancel}
+              disabled={cancelling}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {cancelling ? "Cancelling..." : "Yes, Cancel Order"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

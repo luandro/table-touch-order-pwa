@@ -28,12 +28,12 @@ export const qrCodeService = {
         reader.readAsDataURL(blob);
       });
     } catch (error) {
-      console.error('Error generating QR code:', error);
-      throw new Error('Failed to generate QR code');
+      console.error("Error generating QR code:", error);
+      throw new Error("Failed to generate QR code");
     }
   },
 
-  // Generate table URL
+  // Generate table URL using table UUID
   generateTableUrl(tableId: string, baseUrl?: string): string {
     const base = baseUrl || window.location.origin;
     return `${base}/?table=${tableId}`;
@@ -46,9 +46,9 @@ export const qrCodeService = {
       const qrCodeDataUrl = await this.generateQRCode(tableUrl, 400);
 
       // Create a new window for PDF generation
-      const printWindow = window.open('', '_blank');
+      const printWindow = window.open("", "_blank");
       if (!printWindow) {
-        throw new Error('Could not open print window. Please allow popups.');
+        throw new Error("Could not open print window. Please allow popups.");
       }
 
       // HTML template for the PDF
@@ -197,8 +197,8 @@ export const qrCodeService = {
         <body>
           <div class="container">
             <div class="header">
-              ${options.restaurantLogo ? `<img src="${options.restaurantLogo}" alt="Restaurant Logo" class="logo">` : ''}
-              ${options.restaurantName ? `<div class="restaurant-name">${options.restaurantName}</div>` : ''}
+              ${options.restaurantLogo ? `<img src="${options.restaurantLogo}" alt="Restaurant Logo" class="logo">` : ""}
+              ${options.restaurantName ? `<div class="restaurant-name">${options.restaurantName}</div>` : ""}
               <div class="table-number">Table ${options.tableNumber}</div>
               <div class="subtitle">Scan to Order</div>
             </div>
@@ -238,10 +238,9 @@ export const qrCodeService = {
           printWindow.close();
         }, 500);
       };
-
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      throw new Error('Failed to generate PDF');
+      console.error("Error generating PDF:", error);
+      throw new Error("Failed to generate PDF");
     }
   },
 
@@ -252,15 +251,15 @@ export const qrCodeService = {
       const qrCodeDataUrl = await this.generateQRCode(tableUrl, 512);
 
       // Create download link
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = qrCodeDataUrl;
       link.download = `table-${tableNumber}-qr-code.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('Error downloading QR image:', error);
-      throw new Error('Failed to download QR code image');
+      console.error("Error downloading QR image:", error);
+      throw new Error("Failed to download QR code image");
     }
   },
 
@@ -270,8 +269,8 @@ export const qrCodeService = {
       const tableUrl = this.generateTableUrl(tableId, baseUrl);
       await navigator.clipboard.writeText(tableUrl);
     } catch (error) {
-      console.error('Error copying URL:', error);
-      throw new Error('Failed to copy URL to clipboard');
+      console.error("Error copying URL:", error);
+      throw new Error("Failed to copy URL to clipboard");
     }
-  }
+  },
 };

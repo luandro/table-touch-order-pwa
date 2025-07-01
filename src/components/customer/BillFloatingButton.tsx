@@ -1,9 +1,8 @@
-
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Receipt } from 'lucide-react';
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Receipt } from "lucide-react";
 
 interface BillFloatingButtonProps {
   itemCount: number;
@@ -11,7 +10,11 @@ interface BillFloatingButtonProps {
   onClick: () => void;
 }
 
-const BillFloatingButton = ({ itemCount, total, onClick }: BillFloatingButtonProps) => {
+const BillFloatingButton = ({
+  itemCount,
+  total,
+  onClick,
+}: BillFloatingButtonProps) => {
   const { t } = useTranslation();
 
   if (itemCount === 0) return null;
@@ -24,7 +27,7 @@ const BillFloatingButton = ({ itemCount, total, onClick }: BillFloatingButtonPro
         size="lg"
       >
         <Receipt className="w-5 h-5 mr-2" />
-        <span className="font-medium">{t('customer.menu.viewBill')}</span>
+        <span className="font-medium">{t("customer.menu.viewOrders")}</span>
         <Badge
           variant="secondary"
           className="ml-3 bg-white text-orange-600 font-bold"

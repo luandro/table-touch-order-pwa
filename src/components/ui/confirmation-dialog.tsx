@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,7 +8,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -18,7 +18,7 @@ interface ConfirmationDialogProps {
   confirmText?: string;
   cancelText?: string;
   onConfirm: () => void;
-  variant?: 'default' | 'destructive';
+  variant?: "default" | "destructive";
   children?: React.ReactNode;
 }
 
@@ -27,11 +27,11 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   onOpenChange,
   title,
   description,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText = "Confirm",
+  cancelText = "Cancel",
   onConfirm,
-  variant = 'default',
-  children
+  variant = "default",
+  children,
 }) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -45,7 +45,9 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
           <AlertDialogCancel>{cancelText}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className={variant === 'destructive' ? 'bg-red-600 hover:bg-red-700' : ''}
+            className={
+              variant === "destructive" ? "bg-red-600 hover:bg-red-700" : ""
+            }
           >
             {confirmText}
           </AlertDialogAction>

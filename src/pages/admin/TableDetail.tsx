@@ -1,11 +1,18 @@
-
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { ArrowLeft, User, Clock, Receipt, QrCode, History, AlertTriangle } from 'lucide-react';
+import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  ArrowLeft,
+  User,
+  Clock,
+  Receipt,
+  QrCode,
+  History,
+  AlertTriangle,
+} from "lucide-react";
 import {
   useGetOrCreateTable,
   useOrdersByTable,
@@ -14,13 +21,13 @@ import {
   useCreateReservation,
   useRealTimeOrders,
   useRealTimeTables,
-  useRestaurant
-} from '@/hooks/useSupabaseData';
-import { useLogOrderAction, useLogTableAction } from '@/hooks/useHistory';
-import { transformSupabaseOrder } from '@/utils/dataTransform';
-import { useToast } from '@/hooks/use-toast';
-import { qrCodeService } from '@/services/qrCodeService';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+  useRestaurant,
+} from "@/hooks/useSupabaseData";
+import { useLogOrderAction, useLogTableAction } from "@/hooks/useHistory";
+import { transformSupabaseOrder } from "@/utils/dataTransform";
+import { useToast } from "@/hooks/use-toast";
+import { qrCodeService } from "@/services/qrCodeService";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 const TableDetail = () => {
   const { tableId } = useParams();
@@ -28,18 +35,23 @@ const TableDetail = () => {
   const { toast } = useToast();
 
   // Local state
-  const [reservationCustomerName, setReservationCustomerName] = useState('');
+  const [reservationCustomerName, setReservationCustomerName] = useState("");
   const [showReservationDialog, setShowReservationDialog] = useState(false);
   const [showFreeTableDialog, setShowFreeTableDialog] = useState(false);
-  const [showCancelOrderDialog, setShowCancelOrderDialog] = useState<string | null>(null);
+  const [showCancelOrderDialog, setShowCancelOrderDialog] = useState<
+    string | null
+  >(null);
 
   // Enable real-time updates
   useRealTimeOrders();
   useRealTimeTables();
 
   // Fetch real data from Supabase (auto-create table if doesn't exist)
-  const { data: table, isLoading: tableLoading } = useGetOrCreateTable(tableId || '');
-  const { data: supabaseOrders = [], isLoading: ordersLoading } = useOrdersByTable(tableId || '');
+  const { data: table, isLoading: tableLoading } = useGetOrCreateTable(
+    tableId || "",
+  );
+  const { data: supabaseOrders = [], isLoading: ordersLoading } =
+    useOrdersByTable(tableId || "");
   const { data: restaurant } = useRestaurant();
 
   // Mutations for updating data
@@ -49,10 +61,11 @@ const TableDetail = () => {
 
   // History logging hooks
   const { logOrderConfirmed, logOrderCancelled } = useLogOrderAction();
-  const { logTableFreed, logTableReserved, logQrCodeGenerated } = useLogTableAction();
+  const { logTableFreed, logTableReserved, logQrCodeGenerated } =
+    useLogTableAction();
 
   // Transform orders for display
-  const orders = supabaseOrders.map(order => transformSupabaseOrder(order));
+  const orders = supabaseOrders.map((order) => transformSupabaseOrder(order));
 
   if (tableLoading || ordersLoading) {
     return (
@@ -71,7 +84,9 @@ const TableDetail = () => {
         <Card>
           <CardContent className="pt-6 text-center">
             <h2 className="text-xl font-bold mb-4">Table Not Found</h2>
-            <Button onClick={() => navigate('/admin')}>Back to Dashboard</Button>
+            <Button onClick={() => navigate("/admin")}>
+              Back to Dashboard
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -79,50 +94,65 @@ const TableDetail = () => {
   }
 
   // Get current customer name from the latest order
-  const currentCustomer = orders.find(o => !['paid', 'cancelled'].includes(o.status))?.customerName;
+  const currentCustomer = orders.find(
+    (o) => !["paid", "cancelled"].includes(o.status),
+  )?.customerName;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'occupied': return <Badge variant="destructive">Occupied</Badge>;
-      case 'pending': return <Badge className="bg-yellow-500">Pending</Badge>;
-      case 'reserved': return <Badge className="bg-blue-500">Reserved</Badge>;
-      default: return <Badge className="bg-green-500">Free</Badge>;
+      case "occupied":
+        return <Badge variant="destructive">Occupied</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-500">Pending</Badge>;
+      case "reserved":
+        return <Badge className="bg-blue-500">Reserved</Badge>;
+      default:
+        return <Badge className="bg-green-500">Free</Badge>;
     }
   };
 
   const getOrderStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending': return <Badge className="bg-yellow-500">Pending</Badge>;
-      case 'confirmed': return <Badge className="bg-blue-500">Confirmed</Badge>;
-      case 'preparing': return <Badge className="bg-orange-500">Preparing</Badge>;
-      case 'ready': return <Badge className="bg-green-500">Ready</Badge>;
-      case 'served': return <Badge className="bg-gray-500">Served</Badge>;
-      default: return <Badge>{status}</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-500">Pending</Badge>;
+      case "confirmed":
+        return <Badge className="bg-blue-500">Confirmed</Badge>;
+      case "preparing":
+        return <Badge className="bg-orange-500">Preparing</Badge>;
+      case "ready":
+        return <Badge className="bg-green-500">Ready</Badge>;
+      case "served":
+        return <Badge className="bg-gray-500">Served</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
     }
   };
 
-  const handleOrderStatusUpdate = async (orderId: string, newStatus: string) => {
+  const handleOrderStatusUpdate = async (
+    orderId: string,
+    newStatus: string,
+  ) => {
     try {
       await updateOrderStatus.mutateAsync({ id: orderId, status: newStatus });
 
       // Log action to history
-      if (newStatus === 'confirmed') {
+      if (newStatus === "confirmed") {
         await logOrderConfirmed(tableId!, orderId);
-      } else if (newStatus === 'cancelled') {
+      } else if (newStatus === "cancelled") {
         await logOrderCancelled(tableId!, orderId);
       }
     } catch (error) {
-      console.error('Failed to update order status:', error);
+      console.error("Failed to update order status:", error);
     }
   };
 
   const handleConfirmOrder = (orderId: string) => {
-    handleOrderStatusUpdate(orderId, 'confirmed');
+    handleOrderStatusUpdate(orderId, "confirmed");
   };
 
   const handleCancelOrder = async (orderId: string) => {
     setShowCancelOrderDialog(null);
-    await handleOrderStatusUpdate(orderId, 'cancelled');
+    await handleOrderStatusUpdate(orderId, "cancelled");
   };
 
   const handleMarkTableFree = async () => {
@@ -131,7 +161,7 @@ const TableDetail = () => {
       await markTableFree.mutateAsync(tableId!);
       await logTableFreed(tableId!);
     } catch (error) {
-      console.error('Failed to mark table free:', error);
+      console.error("Failed to mark table free:", error);
     }
   };
 
@@ -149,12 +179,12 @@ const TableDetail = () => {
       setShowReservationDialog(false);
       await createReservation.mutateAsync({
         tableId: tableId!,
-        customerName: reservationCustomerName.trim()
+        customerName: reservationCustomerName.trim(),
       });
       await logTableReserved(tableId!, reservationCustomerName.trim());
-      setReservationCustomerName('');
+      setReservationCustomerName("");
     } catch (error) {
-      console.error('Failed to reserve table:', error);
+      console.error("Failed to reserve table:", error);
     }
   };
 
@@ -171,13 +201,15 @@ const TableDetail = () => {
 
       toast({
         title: "QR Code Generated",
-        description: "PDF QR code has been generated and should download shortly",
+        description:
+          "PDF QR code has been generated and should download shortly",
       });
     } catch (error) {
-      console.error('Failed to generate QR code:', error);
+      console.error("Failed to generate QR code:", error);
       toast({
         title: "QR Code Error",
-        description: error instanceof Error ? error.message : "Failed to generate QR code",
+        description:
+          error instanceof Error ? error.message : "Failed to generate QR code",
         variant: "destructive",
       });
     }
@@ -188,7 +220,9 @@ const TableDetail = () => {
   };
 
   // Filter active orders (not paid or cancelled)
-  const activeOrders = orders.filter(order => !['paid', 'cancelled'].includes(order.status));
+  const activeOrders = orders.filter(
+    (order) => !["paid", "cancelled"].includes(order.status),
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -197,16 +231,18 @@ const TableDetail = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/admin')}
+            onClick={() => navigate("/admin")}
             className="mr-3"
           >
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-orange-600">Table {table.table_number}</h1>
+            <h1 className="text-xl font-bold text-orange-600">
+              Table {table.table_number}
+            </h1>
             <p className="text-gray-600">Table Management</p>
           </div>
-          {getStatusBadge(table.status || 'available')}
+          {getStatusBadge(table.status || "available")}
         </div>
       </div>
 
@@ -223,11 +259,13 @@ const TableDetail = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-600">Status</p>
-                <p className="font-medium">{getStatusBadge(table.status || 'available')}</p>
+                <p className="font-medium">
+                  {getStatusBadge(table.status || "available")}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Customer</p>
-                <p className="font-medium">{currentCustomer || 'None'}</p>
+                <p className="font-medium">{currentCustomer || "None"}</p>
               </div>
             </div>
             {table.created_at && (
@@ -237,9 +275,12 @@ const TableDetail = () => {
                   <Clock className="w-4 h-4" />
                   <span>
                     {activeOrders.length > 0
-                      ? new Date(Math.max(...activeOrders.map(o => o.timestamp.getTime()))).toLocaleString()
-                      : new Date(table.created_at).toLocaleString()
-                    }
+                      ? new Date(
+                          Math.max(
+                            ...activeOrders.map((o) => o.timestamp.getTime()),
+                          ),
+                        ).toLocaleString()
+                      : new Date(table.created_at).toLocaleString()}
                   </span>
                 </p>
               </div>
@@ -257,20 +298,31 @@ const TableDetail = () => {
           </CardHeader>
           <CardContent>
             {activeOrders.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No active orders for this table</p>
+              <p className="text-gray-500 text-center py-8">
+                No active orders for this table
+              </p>
             ) : (
               <div className="space-y-4">
-                {activeOrders.map(order => (
+                {activeOrders.map((order) => (
                   <div key={order.id} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-medium">Order #{order.id.slice(-8)}</h3>
+                      <h3 className="font-medium">
+                        Order #{order.id.slice(-8)}
+                      </h3>
                       {getOrderStatusBadge(order.status)}
                     </div>
                     <div className="space-y-2">
-                      {order.items.map(item => (
-                        <div key={item.id} className="flex justify-between text-sm">
-                          <span>{item.quantity}x {item.menuItem.name}</span>
-                          <span>${(item.menuItem.price * item.quantity).toFixed(2)}</span>
+                      {order.items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex justify-between text-sm"
+                        >
+                          <span>
+                            {item.quantity}x {item.menuItem.name}
+                          </span>
+                          <span>
+                            ${(item.menuItem.price * item.quantity).toFixed(2)}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -279,7 +331,7 @@ const TableDetail = () => {
                       <span>${order.total.toFixed(2)}</span>
                     </div>
                     <div className="flex space-x-2 mt-3">
-                      {order.status === 'pending' && (
+                      {order.status === "pending" && (
                         <>
                           <Button
                             size="sm"
@@ -300,12 +352,14 @@ const TableDetail = () => {
                           </Button>
                         </>
                       )}
-                      {order.status === 'confirmed' && (
+                      {order.status === "confirmed" && (
                         <>
                           <Button
                             size="sm"
                             className="bg-blue-500 hover:bg-blue-600"
-                            onClick={() => handleOrderStatusUpdate(order.id, 'preparing')}
+                            onClick={() =>
+                              handleOrderStatusUpdate(order.id, "preparing")
+                            }
                             disabled={updateOrderStatus.isPending}
                           >
                             Start Preparing
@@ -321,12 +375,14 @@ const TableDetail = () => {
                           </Button>
                         </>
                       )}
-                      {order.status === 'preparing' && (
+                      {order.status === "preparing" && (
                         <>
                           <Button
                             size="sm"
                             className="bg-green-500 hover:bg-green-600"
-                            onClick={() => handleOrderStatusUpdate(order.id, 'ready')}
+                            onClick={() =>
+                              handleOrderStatusUpdate(order.id, "ready")
+                            }
                             disabled={updateOrderStatus.isPending}
                           >
                             Mark Ready
@@ -342,11 +398,13 @@ const TableDetail = () => {
                           </Button>
                         </>
                       )}
-                      {order.status === 'ready' && (
+                      {order.status === "ready" && (
                         <Button
                           size="sm"
                           className="bg-green-500 hover:bg-green-600"
-                          onClick={() => handleOrderStatusUpdate(order.id, 'delivered')}
+                          onClick={() =>
+                            handleOrderStatusUpdate(order.id, "delivered")
+                          }
                           disabled={updateOrderStatus.isPending}
                         >
                           Mark Served
@@ -371,7 +429,11 @@ const TableDetail = () => {
                 variant="outline"
                 onClick={() => setShowFreeTableDialog(true)}
                 disabled={markTableFree.isPending}
-                className={activeOrders.length > 0 ? "text-red-600 border-red-600 hover:bg-red-50" : ""}
+                className={
+                  activeOrders.length > 0
+                    ? "text-red-600 border-red-600 hover:bg-red-50"
+                    : ""
+                }
               >
                 {activeOrders.length > 0 ? (
                   <>
@@ -440,7 +502,7 @@ const TableDetail = () => {
               value={reservationCustomerName}
               onChange={(e) => setReservationCustomerName(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   handleReserveTable();
                 }
               }}

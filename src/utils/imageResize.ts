@@ -1,22 +1,27 @@
-export function resizeImage(file: File, maxWidth: number, maxHeight: number, quality: number = 0.8): Promise<File> {
+export function resizeImage(
+  file: File,
+  maxWidth: number,
+  maxHeight: number,
+  quality: number = 0.8,
+): Promise<File> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const reader = new FileReader();
 
     reader.onload = (e) => {
       if (!e.target?.result) {
-        reject(new Error('Failed to read file'));
+        reject(new Error("Failed to read file"));
         return;
       }
       img.src = e.target.result as string;
     };
 
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
       if (!ctx) {
-        reject(new Error('Failed to get canvas context'));
+        reject(new Error("Failed to get canvas context"));
         return;
       }
 
@@ -35,7 +40,7 @@ export function resizeImage(file: File, maxWidth: number, maxHeight: number, qua
       canvas.toBlob(
         (blob) => {
           if (!blob) {
-            reject(new Error('Failed to create blob'));
+            reject(new Error("Failed to create blob"));
             return;
           }
 
@@ -48,46 +53,49 @@ export function resizeImage(file: File, maxWidth: number, maxHeight: number, qua
           resolve(resizedFile);
         },
         file.type,
-        quality
+        quality,
       );
     };
 
     img.onerror = () => {
-      reject(new Error('Failed to load image'));
+      reject(new Error("Failed to load image"));
     };
 
     reader.onerror = () => {
-      reject(new Error('Failed to read file'));
+      reject(new Error("Failed to read file"));
     };
 
     reader.readAsDataURL(file);
   });
 }
 
-export function validateImageFile(file: File): { valid: boolean; error?: string } {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+export function validateImageFile(file: File): {
+  valid: boolean;
+  error?: string;
+} {
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
   const maxSize = 5 * 1024 * 1024; // 5MB
 
   if (!allowedTypes.includes(file.type)) {
     return {
       valid: false,
-      error: 'Only JPG, PNG, and WebP files are allowed'
+      error: "Only JPG, PNG, and WebP files are allowed",
     };
   }
 
   if (file.size > maxSize) {
     return {
       valid: false,
-      error: 'File size must be less than 5MB'
+      error: "File size must be less than 5MB",
     };
   }
   // Additional validation: Check file extension matches MIME type
-  const extension = file.name.split('.').pop()?.toLowerCase();
-  const validExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  const validExtensions = ["jpg", "jpeg", "png", "webp"];
   if (!extension || !validExtensions.includes(extension)) {
     return {
       valid: false,
-      error: 'Invalid file extension'
+      error: "Invalid file extension",
     };
   }
 

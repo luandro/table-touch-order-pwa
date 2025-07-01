@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, Clock } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertCircle, Clock } from "lucide-react";
 
 interface AnimatedNotificationBannerProps {
   pendingOrdersCount: number;
@@ -13,7 +13,7 @@ interface AnimatedNotificationBannerProps {
 const AnimatedNotificationBanner = ({
   pendingOrdersCount,
   pendingOrders,
-  onNotificationClick
+  onNotificationClick,
 }: AnimatedNotificationBannerProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -46,7 +46,7 @@ const AnimatedNotificationBanner = ({
         navigate(`/admin/table/${firstPendingOrder.table_id}`);
       } else {
         // Fallback to orders page
-        navigate('/admin/orders');
+        navigate("/admin/orders");
       }
     }
   };
@@ -54,10 +54,12 @@ const AnimatedNotificationBanner = ({
   if (!isVisible) return null;
 
   return (
-    <div className={`notification-banner-enter ${hasNewOrder ? 'notification-pulse' : ''}`}>
+    <div
+      className={`notification-banner-enter ${hasNewOrder ? "notification-pulse" : ""}`}
+    >
       <Card
         className={`border-orange-200 bg-orange-50 cursor-pointer hover:bg-orange-100 transition-colors duration-200 ${
-          hasNewOrder ? 'notification-pulse' : ''
+          hasNewOrder ? "notification-pulse" : ""
         }`}
         onClick={handleBannerClick}
       >
@@ -65,9 +67,11 @@ const AnimatedNotificationBanner = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <AlertCircle className={`w-6 h-6 text-orange-600 ${
-                  hasNewOrder ? 'notification-icon-pulse' : ''
-                }`} />
+                <AlertCircle
+                  className={`w-6 h-6 text-orange-600 ${
+                    hasNewOrder ? "notification-icon-pulse" : ""
+                  }`}
+                />
                 {pendingOrdersCount > 1 && (
                   <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
                     {pendingOrdersCount}
@@ -77,12 +81,16 @@ const AnimatedNotificationBanner = ({
 
               <div className="flex-1">
                 <span className="font-medium text-orange-800 text-sm sm:text-base">
-                  {t('admin.dashboard.newOrdersAlert', { count: pendingOrdersCount })}
+                  {t("admin.dashboard.newOrdersAlert", {
+                    count: pendingOrdersCount,
+                  })}
                 </span>
                 <div className="flex items-center space-x-2 mt-1">
                   <Clock className="w-4 h-4 text-orange-600" />
                   <span className="text-xs text-orange-700">
-                    {t('admin.dashboard.clickToView', { defaultValue: 'Click to view details' })}
+                    {t("admin.dashboard.clickToView", {
+                      defaultValue: "Click to view details",
+                    })}
                   </span>
                 </div>
               </div>
@@ -93,14 +101,16 @@ const AnimatedNotificationBanner = ({
                 <div className="text-xs text-orange-600 font-medium">
                   {pendingOrders.length > 0 && (
                     <>
-                      {t('admin.tables.tableNumber', {
-                        number: pendingOrders[0].table_id?.split('-').pop() || '?'
+                      {t("admin.tables.tableNumber", {
+                        number:
+                          pendingOrders[0].table_id?.split("-").pop() || "?",
                       })}
                     </>
                   )}
                 </div>
                 <div className="text-xs text-orange-500">
-                  {pendingOrders.length > 1 && `+${pendingOrders.length - 1} more`}
+                  {pendingOrders.length > 1 &&
+                    `+${pendingOrders.length - 1} more`}
                 </div>
               </div>
               <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />

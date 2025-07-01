@@ -1,17 +1,18 @@
-
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Table } from '@/types';
-import { Users, Clock } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Table } from "@/types";
+import { Users, Clock, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface TableCardProps {
   table: Table;
   onClick: () => void;
+  onDelete?: (tableId: string) => void;
 }
 
-const TableCard = ({ table, onClick }: TableCardProps) => {
+const TableCard = ({ table, onClick, onDelete }: TableCardProps) => {
   const { t } = useTranslation();
   const [previousStatus, setPreviousStatus] = useState<string>(table.status);
   const [isStatusChanging, setIsStatusChanging] = useState(false);
@@ -30,46 +31,81 @@ const TableCard = ({ table, onClick }: TableCardProps) => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'occupied': return 'bg-red-100 border-red-300 text-red-800';
-      case 'pending': return 'bg-yellow-100 border-yellow-300 text-yellow-800';
-      case 'reserved': return 'bg-blue-100 border-blue-300 text-blue-800';
-      default: return 'bg-green-100 border-green-300 text-green-800';
+      case "occupied":
+        return "bg-red-100 border-red-300 text-red-800";
+      case "pending":
+        return "bg-yellow-100 border-yellow-300 text-yellow-800";
+      case "reserved":
+        return "bg-blue-100 border-blue-300 text-blue-800";
+      default:
+        return "bg-green-100 border-green-300 text-green-800";
     }
   };
 
   const getStatusBadge = (status: string) => {
     const badgeClasses = "text-white font-medium";
     switch (status) {
-      case 'occupied':
-        return <Badge className={`bg-red-500 hover:bg-red-600 ${badgeClasses}`}>{t('admin.tables.status.occupied')}</Badge>;
-      case 'pending':
-        return <Badge className={`bg-yellow-500 hover:bg-yellow-600 ${badgeClasses}`}>{t('admin.tables.status.pending')}</Badge>;
-      case 'reserved':
-        return <Badge className={`bg-blue-500 hover:bg-blue-600 ${badgeClasses}`}>{t('admin.tables.status.reserved')}</Badge>;
+      case "occupied":
+        return (
+          <Badge className={`bg-red-500 hover:bg-red-600 ${badgeClasses}`}>
+            {t("admin.tables.status.occupied")}
+          </Badge>
+        );
+      case "pending":
+        return (
+          <Badge
+            className={`bg-yellow-500 hover:bg-yellow-600 ${badgeClasses}`}
+          >
+            {t("admin.tables.status.pending")}
+          </Badge>
+        );
+      case "reserved":
+        return (
+          <Badge className={`bg-blue-500 hover:bg-blue-600 ${badgeClasses}`}>
+            {t("admin.tables.status.reserved")}
+          </Badge>
+        );
       default:
-        return <Badge className={`bg-green-500 hover:bg-green-600 ${badgeClasses}`}>{t('admin.tables.status.free')}</Badge>;
+        return (
+          <Badge className={`bg-green-500 hover:bg-green-600 ${badgeClasses}`}>
+            {t("admin.tables.status.free")}
+          </Badge>
+        );
     }
   };
 
   const getAnimationClass = () => {
-    if (!isStatusChanging) return '';
+    if (!isStatusChanging) return "";
 
     switch (table.status) {
-      case 'occupied': return 'table-status-occupied';
-      case 'free': return 'table-status-free';
-      default: return '';
+      case "occupied":
+        return "table-status-occupied";
+      case "free":
+        return "table-status-free";
+      default:
+        return "";
     }
   };
 
   const formatLastActivity = (date: Date) => {
     const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    const diffInMinutes = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60),
+    );
 
-    if (diffInMinutes < 1) return t('time.justNow');
-    if (diffInMinutes < 60) return t('time.minutesAgo', { count: diffInMinutes });
+    if (diffInMinutes < 1) return t("time.justNow");
+    if (diffInMinutes < 60)
+      return t("time.minutesAgo", { count: diffInMinutes });
 
     const diffInHours = Math.floor(diffInMinutes / 60);
-    return t('time.hoursAgo', { count: diffInHours });
+    return t("time.hoursAgo", { count: diffInHours });
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    if (onDelete && table.supabaseId) {
+      onDelete(table.supabaseId);
+    }
   };
 
   return (
@@ -83,10 +119,20 @@ const TableCard = ({ table, onClick }: TableCardProps) => {
       `}
       onClick={onClick}
     >
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 relative">
         <CardTitle className="text-center text-xl sm:text-2xl">
-          {t('admin.tables.tableNumber', { number: table.id })}
+          Table {table.id}
         </CardTitle>
+        {onDelete && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50"
+            onClick={handleDeleteClick}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="text-center space-y-2">
         <div className="flex justify-center">
@@ -96,7 +142,9 @@ const TableCard = ({ table, onClick }: TableCardProps) => {
         {table.customerName && (
           <div className="flex items-center justify-center space-x-1">
             <Users className="w-3 h-3 text-gray-500" />
-            <p className="text-sm font-medium line-clamp-1">{table.customerName}</p>
+            <p className="text-sm font-medium line-clamp-1">
+              {table.customerName}
+            </p>
           </div>
         )}
 
@@ -111,12 +159,17 @@ const TableCard = ({ table, onClick }: TableCardProps) => {
 
         {/* Status indicator dot */}
         <div className="flex justify-center mt-2">
-          <div className={`w-2 h-2 rounded-full ${
-            table.status === 'occupied' ? 'bg-red-500 animate-pulse' :
-            table.status === 'pending' ? 'bg-yellow-500 animate-pulse' :
-            table.status === 'reserved' ? 'bg-blue-500' :
-            'bg-green-500'
-          }`} />
+          <div
+            className={`w-2 h-2 rounded-full ${
+              table.status === "occupied"
+                ? "bg-red-500 animate-pulse"
+                : table.status === "pending"
+                  ? "bg-yellow-500 animate-pulse"
+                  : table.status === "reserved"
+                    ? "bg-blue-500"
+                    : "bg-green-500"
+            }`}
+          />
         </div>
       </CardContent>
     </Card>

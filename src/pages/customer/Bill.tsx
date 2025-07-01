@@ -1,30 +1,29 @@
-
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Minus, Plus, ArrowLeft } from 'lucide-react';
-import { BillItem } from '@/types';
-import { useCreateOrder, useTableByNumber } from '@/hooks/useSupabaseData';
-import type { OrderInsert } from '@/types/supabase';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Minus, Plus, ArrowLeft } from "lucide-react";
+import { BillItem } from "@/types";
+import { useCreateOrder, useTableByNumber } from "@/hooks/useSupabaseData";
+import type { OrderInsert } from "@/types/supabase";
 
 const Bill = () => {
   const { tableId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [billItems, setBillItems] = useState<BillItem[]>([]);
-  const [customerName, setCustomerName] = useState('');
+  const [customerName, setCustomerName] = useState("");
 
   // Supabase hooks
   const { mutate: createOrder, isPending: isCreatingOrder } = useCreateOrder();
-  const { data: table } = useTableByNumber(parseInt(tableId || '0'));
+  const { data: table } = useTableByNumber(parseInt(tableId || "0"));
 
   useEffect(() => {
-    const storedItems = localStorage.getItem('billItems');
-    const storedName = localStorage.getItem('customerName');
+    const storedItems = localStorage.getItem("billItems");
+    const storedName = localStorage.getItem("customerName");
 
     if (storedItems) {
       setBillItems(JSON.parse(storedItems));
@@ -36,17 +35,20 @@ const Bill = () => {
 
   const updateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity === 0) {
-      setBillItems(prev => prev.filter(item => item.id !== itemId));
+      setBillItems((prev) => prev.filter((item) => item.id !== itemId));
     } else {
-      setBillItems(prev =>
-        prev.map(item =>
-          item.id === itemId ? { ...item, quantity: newQuantity } : item
-        )
+      setBillItems((prev) =>
+        prev.map((item) =>
+          item.id === itemId ? { ...item, quantity: newQuantity } : item,
+        ),
       );
     }
   };
 
-  const subtotal = billItems.reduce((sum, item) => sum + (item.menuItem.price * item.quantity), 0);
+  const subtotal = billItems.reduce(
+    (sum, item) => sum + item.menuItem.price * item.quantity,
+    0,
+  );
   const total = subtotal; // In real app, might include tax/service charges
 
   const handlePlaceOrder = () => {
@@ -55,7 +57,7 @@ const Bill = () => {
     }
 
     // Transform bill items to the format expected by Supabase
-    const orderItems = billItems.map(item => ({
+    const orderItems = billItems.map((item) => ({
       item_id: item.menuItem.id,
       name: item.menuItem.name,
       description: item.menuItem.description,
@@ -63,7 +65,7 @@ const Bill = () => {
       quantity: item.quantity,
       notes: item.notes || null,
       image: item.menuItem.image,
-      category: item.menuItem.category
+      category: item.menuItem.category,
     }));
 
     const orderPayload: OrderInsert = {
@@ -72,19 +74,22 @@ const Bill = () => {
       items: orderItems as any, // JSON field
       subtotal: subtotal,
       total: total,
-      status: 'pending'
+      status: "pending",
     };
 
     createOrder(orderPayload, {
       onSuccess: () => {
-        localStorage.removeItem('billItems');
-        localStorage.removeItem('customerName');
-        navigate(`/table/${tableId}`);
+        localStorage.removeItem("billItems");
+        localStorage.removeItem("customerName");
+        // Navigate back to menu with order placed state
+        navigate(`/table/${tableId}`, {
+          state: { orderPlaced: true },
+        });
       },
       onError: (error) => {
-        console.error('Failed to create order:', error);
+        console.error("Failed to create order:", error);
         // Error handling is done by the hook's toast
-      }
+      },
     });
   };
 
@@ -102,8 +107,12 @@ const Bill = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-orange-600">{t('customer.bill.title')}</h1>
-            <p className="text-gray-600">{t('common.labels.table')} {tableId}</p>
+            <h1 className="text-xl font-bold text-orange-600">
+              {t("customer.bill.title")}
+            </h1>
+            <p className="text-gray-600">
+              {t("common.labels.table")} {tableId}
+            </p>
           </div>
         </div>
       </div>
@@ -112,19 +121,19 @@ const Bill = () => {
         {/* Customer Info */}
         <Card>
           <CardHeader>
-            <CardTitle>{t('customer.bill.customerInfo')}</CardTitle>
+            <CardTitle>{t("customer.bill.customerInfo")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="customerName">{t('common.labels.name')}</Label>
+              <Label htmlFor="customerName">{t("common.labels.name")}</Label>
               <Input
                 id="customerName"
                 value={customerName}
                 onChange={(e) => {
                   setCustomerName(e.target.value);
-                  localStorage.setItem('customerName', e.target.value);
+                  localStorage.setItem("customerName", e.target.value);
                 }}
-                placeholder={t('customer.form.namePlaceholder')}
+                placeholder={t("customer.form.namePlaceholder")}
               />
             </div>
           </CardContent>
@@ -133,14 +142,19 @@ const Bill = () => {
         {/* Bill Items */}
         <Card>
           <CardHeader>
-            <CardTitle>{t('customer.bill.orderItems')}</CardTitle>
+            <CardTitle>{t("customer.bill.orderItems")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {billItems.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">{t('customer.bill.empty')}</p>
+              <p className="text-gray-500 text-center py-8">
+                {t("customer.bill.empty")}
+              </p>
             ) : (
-              billItems.map(item => (
-                <div key={item.id} className="flex items-center space-x-4 py-3 border-b last:border-b-0">
+              billItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center space-x-4 py-3 border-b last:border-b-0"
+                >
                   <img
                     src={item.menuItem.image}
                     alt={item.menuItem.name}
@@ -148,9 +162,15 @@ const Bill = () => {
                   />
                   <div className="flex-1">
                     <h3 className="font-medium">{item.menuItem.name}</h3>
-                    <p className="text-sm text-gray-600">{t('customer.bill.eachPrice', { price: item.menuItem.price.toFixed(2) })}</p>
+                    <p className="text-sm text-gray-600">
+                      {t("customer.bill.eachPrice", {
+                        price: item.menuItem.price.toFixed(2),
+                      })}
+                    </p>
                     {item.notes && (
-                      <p className="text-sm text-gray-500 italic">{t('customer.bill.itemNote', { note: item.notes })}</p>
+                      <p className="text-sm text-gray-500 italic">
+                        {t("customer.bill.itemNote", { note: item.notes })}
+                      </p>
                     )}
                   </div>
                   <div className="flex items-center space-x-2">
@@ -161,7 +181,9 @@ const Bill = () => {
                     >
                       <Minus className="w-3 h-3" />
                     </Button>
-                    <span className="w-8 text-center font-medium">{item.quantity}</span>
+                    <span className="w-8 text-center font-medium">
+                      {item.quantity}
+                    </span>
                     <Button
                       variant="outline"
                       size="sm"
@@ -185,11 +207,11 @@ const Bill = () => {
             <CardContent className="pt-6">
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span>{t('common.labels.subtotal')}:</span>
+                  <span>{t("common.labels.subtotal")}:</span>
                   <span>${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg border-t pt-2">
-                  <span>{t('common.labels.total')}:</span>
+                  <span>{t("common.labels.total")}:</span>
                   <span className="text-orange-600">${total.toFixed(2)}</span>
                 </div>
               </div>
@@ -197,9 +219,15 @@ const Bill = () => {
                 onClick={handlePlaceOrder}
                 className="w-full mt-6 bg-orange-500 hover:bg-orange-600"
                 size="lg"
-                disabled={billItems.length === 0 || !customerName.trim() || isCreatingOrder}
+                disabled={
+                  billItems.length === 0 ||
+                  !customerName.trim() ||
+                  isCreatingOrder
+                }
               >
-                {isCreatingOrder ? (t('common.loading') || 'Placing order...') : (t('customer.bill.placeOrder') || 'Place Order')}
+                {isCreatingOrder
+                  ? t("common.loading") || "Placing order..."
+                  : t("customer.bill.placeOrder") || "Place Order"}
               </Button>
             </CardContent>
           </Card>
