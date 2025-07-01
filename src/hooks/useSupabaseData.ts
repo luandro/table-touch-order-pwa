@@ -1,28 +1,34 @@
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import {
   tablesService,
   menuService,
   ordersService,
   restaurantService,
   subscribeToOrders,
-  subscribeToTables
-} from '@/services/supabaseService';
-import { useEffect } from 'react';
-import type { OrderInsert, TableUpdate, MenuItem, MenuItemInsert, MenuItemUpdate, MenuCategory } from '@/types/supabase';
+  subscribeToTables,
+} from "@/services/supabaseService";
+import { useEffect } from "react";
+import type {
+  OrderInsert,
+  TableUpdate,
+  MenuItem,
+  MenuItemInsert,
+  MenuItemUpdate,
+  MenuCategory,
+} from "@/types/supabase";
 
 // Tables hooks
 export const useTables = () => {
   return useQuery({
-    queryKey: ['tables'],
+    queryKey: ["tables"],
     queryFn: tablesService.getAllTables,
   });
 };
 
 export const useTable = (tableId: string) => {
   return useQuery({
-    queryKey: ['table', tableId],
+    queryKey: ["table", tableId],
     queryFn: () => tablesService.getTableById(tableId),
     enabled: !!tableId,
   });
@@ -30,7 +36,7 @@ export const useTable = (tableId: string) => {
 
 export const useTableWithDetails = (tableId: string) => {
   return useQuery({
-    queryKey: ['table-details', tableId],
+    queryKey: ["table-details", tableId],
     queryFn: () => tablesService.getTableWithDetails(tableId),
     enabled: !!tableId,
   });
@@ -38,15 +44,18 @@ export const useTableWithDetails = (tableId: string) => {
 
 export const useGetOrCreateTable = (tableIdentifier: string) => {
   return useQuery({
-    queryKey: ['table-or-create', tableIdentifier],
+    queryKey: ["table-or-create", tableIdentifier],
     queryFn: () => tablesService.getOrCreateTable(tableIdentifier),
     enabled: !!tableIdentifier,
   });
 };
 
-export const useTableByNumber = (tableNumber: number, options?: { enabled?: boolean }) => {
+export const useTableByNumber = (
+  tableNumber: number,
+  options?: { enabled?: boolean },
+) => {
   return useQuery({
-    queryKey: ['table-number', tableNumber],
+    queryKey: ["table-number", tableNumber],
     queryFn: () => tablesService.getTableByNumber(tableNumber),
     enabled: options?.enabled !== undefined ? options.enabled : !!tableNumber,
   });
@@ -55,28 +64,28 @@ export const useTableByNumber = (tableNumber: number, options?: { enabled?: bool
 // Menu hooks
 export const useMenuCategories = () => {
   return useQuery({
-    queryKey: ['menu-categories'],
+    queryKey: ["menu-categories"],
     queryFn: menuService.getCategories,
   });
 };
 
 export const useAllMenuCategories = () => {
   return useQuery({
-    queryKey: ['all-menu-categories'],
+    queryKey: ["all-menu-categories"],
     queryFn: menuService.getAllCategories,
   });
 };
 
 export const useCategoriesWithItemCount = () => {
   return useQuery({
-    queryKey: ['categories-with-count'],
+    queryKey: ["categories-with-count"],
     queryFn: menuService.getCategoriesWithItemCount,
   });
 };
 
 export const useCategory = (categoryId: string) => {
   return useQuery({
-    queryKey: ['category', categoryId],
+    queryKey: ["category", categoryId],
     queryFn: () => menuService.getCategoryById(categoryId),
     enabled: !!categoryId,
   });
@@ -84,14 +93,14 @@ export const useCategory = (categoryId: string) => {
 
 export const useMenuItems = () => {
   return useQuery({
-    queryKey: ['menu-items'],
+    queryKey: ["menu-items"],
     queryFn: menuService.getMenuItems,
   });
 };
 
 export const useMenuItem = (itemId: string) => {
   return useQuery({
-    queryKey: ['menu-item', itemId],
+    queryKey: ["menu-item", itemId],
     queryFn: () => menuService.getMenuItemById(itemId),
     enabled: !!itemId,
   });
@@ -99,7 +108,7 @@ export const useMenuItem = (itemId: string) => {
 
 export const useMenuItemsByCategory = (categoryId: string) => {
   return useQuery({
-    queryKey: ['menu-items', 'category', categoryId],
+    queryKey: ["menu-items", "category", categoryId],
     queryFn: () => menuService.getMenuItemsByCategory(categoryId),
     enabled: !!categoryId,
   });
@@ -108,14 +117,14 @@ export const useMenuItemsByCategory = (categoryId: string) => {
 // Orders hooks
 export const useOrders = () => {
   return useQuery({
-    queryKey: ['orders'],
+    queryKey: ["orders"],
     queryFn: ordersService.getAllOrders,
   });
 };
 
 export const useOrdersByTable = (tableId: string) => {
   return useQuery({
-    queryKey: ['orders', 'table', tableId],
+    queryKey: ["orders", "table", tableId],
     queryFn: () => ordersService.getOrdersByTable(tableId),
     enabled: !!tableId,
   });
@@ -123,7 +132,7 @@ export const useOrdersByTable = (tableId: string) => {
 
 export const useOrder = (orderId: string, options?: { enabled?: boolean }) => {
   return useQuery({
-    queryKey: ['order', orderId],
+    queryKey: ["order", orderId],
     queryFn: () => ordersService.getOrderById(orderId),
     enabled: options?.enabled !== undefined ? options.enabled : !!orderId,
   });
@@ -132,7 +141,7 @@ export const useOrder = (orderId: string, options?: { enabled?: boolean }) => {
 // Restaurant hooks
 export const useRestaurant = () => {
   return useQuery({
-    queryKey: ['restaurant'],
+    queryKey: ["restaurant"],
     queryFn: restaurantService.getDefaultRestaurant,
   });
 };
@@ -145,7 +154,7 @@ export const useCreateOrder = () => {
   return useMutation({
     mutationFn: (order: OrderInsert) => ordersService.createOrder(order),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast({
         title: "Order Created",
         description: "Your order has been placed successfully!",
@@ -169,7 +178,7 @@ export const useUpdateOrderStatus = () => {
     mutationFn: ({ id, status }: { id: string; status: string }) =>
       ordersService.updateOrderStatus(id, status),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast({
         title: "Order Updated",
         description: "Order status has been updated successfully!",
@@ -190,10 +199,9 @@ export const useCancelOrder = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ id, cancelledBy }: { id: string; cancelledBy?: 'customer' | 'admin' }) =>
-      ordersService.cancelOrder(id, cancelledBy),
+    mutationFn: ({ id }: { id: string }) => ordersService.cancelOrder(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast({
         title: "Order Cancelled",
         description: "Your order has been cancelled successfully",
@@ -202,7 +210,8 @@ export const useCancelOrder = () => {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to cancel order. Please try again.",
+        description:
+          error.message || "Failed to cancel order. Please try again.",
         variant: "destructive",
       });
     },
@@ -217,8 +226,8 @@ export const useUpdateTable = () => {
     mutationFn: ({ id, updates }: { id: string; updates: TableUpdate }) =>
       tablesService.updateTableStatus(id, updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tables'] });
-      queryClient.invalidateQueries({ queryKey: ['table-details'] });
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
+      queryClient.invalidateQueries({ queryKey: ["table-details"] });
       toast({
         title: "Table Updated",
         description: "Table status has been updated successfully!",
@@ -241,9 +250,9 @@ export const useMarkTableFree = () => {
   return useMutation({
     mutationFn: (tableId: string) => tablesService.markTableFree(tableId),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['tables'] });
-      queryClient.invalidateQueries({ queryKey: ['table-details'] });
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
+      queryClient.invalidateQueries({ queryKey: ["table-details"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast({
         title: "Table Freed",
         description: `Table marked as free. ${data.cancelledOrders.length} order(s) cancelled.`,
@@ -264,11 +273,18 @@ export const useCreateReservation = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ tableId, customerName, notes }: { tableId: string; customerName: string; notes?: string }) =>
-      tablesService.createReservation(tableId, customerName, notes),
+    mutationFn: ({
+      tableId,
+      customerName,
+      notes,
+    }: {
+      tableId: string;
+      customerName: string;
+      notes?: string;
+    }) => tablesService.createReservation(tableId, customerName, notes),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tables'] });
-      queryClient.invalidateQueries({ queryKey: ['table-details'] });
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
+      queryClient.invalidateQueries({ queryKey: ["table-details"] });
       toast({
         title: "Reservation Created",
         description: "Table has been reserved successfully!",
@@ -291,7 +307,7 @@ export const useDeleteTable = () => {
   return useMutation({
     mutationFn: (tableId: string) => tablesService.deleteTable(tableId),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['tables'] });
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
       if (result.success) {
         toast({
           title: "Table Deleted",
@@ -315,13 +331,72 @@ export const useDeleteTable = () => {
   });
 };
 
+// Table creation hook for admin
+export const useCreateTable = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (tableData: {
+      table_number?: number;
+      restaurant_id: string;
+      status?: string;
+      mode?: string;
+    }) => tablesService.createTable(tableData),
+    onSuccess: (newTable) => {
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
+      toast({
+        title: "Table Created",
+        description: `Table ${newTable.table_number} has been created successfully!`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create table",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+// Restaurant settings hook
+export const useUpdateRestaurantSettings = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      settings,
+    }: {
+      id: string;
+      settings: { name?: string; logo?: string; theme?: any };
+    }) => restaurantService.updateRestaurantSettings(id, settings),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["restaurant"] });
+      toast({
+        title: "Settings Updated",
+        description: "Restaurant settings have been saved successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update restaurant settings",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
 // Real-time subscriptions
 export const useRealTimeOrders = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
     const subscription = subscribeToOrders((payload) => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
     });
 
     return () => {
@@ -335,7 +410,7 @@ export const useRealTimeTables = () => {
 
   useEffect(() => {
     const subscription = subscribeToTables((payload) => {
-      queryClient.invalidateQueries({ queryKey: ['tables'] });
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
     });
 
     return () => {
@@ -352,7 +427,7 @@ export const useCreateMenuItem = () => {
   return useMutation({
     mutationFn: (item: MenuItemInsert) => menuService.createMenuItem(item),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['menu-items'] });
+      queryClient.invalidateQueries({ queryKey: ["menu-items"] });
       toast({
         title: "Item Created",
         description: "Menu item has been created successfully!",
@@ -376,7 +451,7 @@ export const useUpdateMenuItem = () => {
     mutationFn: ({ id, updates }: { id: string; updates: MenuItemUpdate }) =>
       menuService.updateMenuItem(id, updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['menu-items'] });
+      queryClient.invalidateQueries({ queryKey: ["menu-items"] });
       toast({
         title: "Item Updated",
         description: "Menu item has been updated successfully!",
@@ -399,7 +474,7 @@ export const useDeleteMenuItem = () => {
   return useMutation({
     mutationFn: (id: string) => menuService.deleteMenuItem(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['menu-items'] });
+      queryClient.invalidateQueries({ queryKey: ["menu-items"] });
       toast({
         title: "Item Deleted",
         description: "Menu item has been removed successfully!",
@@ -423,7 +498,7 @@ export const useToggleMenuItemAvailability = () => {
     mutationFn: ({ id, active }: { id: string; active: boolean }) =>
       menuService.toggleMenuItemAvailability(id, active),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['menu-items'] });
+      queryClient.invalidateQueries({ queryKey: ["menu-items"] });
       toast({
         title: "Availability Updated",
         description: "Menu item availability has been updated!",
@@ -445,12 +520,13 @@ export const useCreateCategory = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (category: Omit<MenuCategory, 'id' | 'created_at' | 'updated_at'>) =>
-      menuService.createCategory(category),
+    mutationFn: (
+      category: Omit<MenuCategory, "id" | "created_at" | "updated_at">,
+    ) => menuService.createCategory(category),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['menu-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['all-menu-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['categories-with-count'] });
+      queryClient.invalidateQueries({ queryKey: ["menu-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["all-menu-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["categories-with-count"] });
       toast({
         title: "Category Created",
         description: "Menu category has been created successfully!",
@@ -471,12 +547,17 @@ export const useUpdateCategory = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<MenuCategory> }) =>
-      menuService.updateCategory(id, updates),
+    mutationFn: ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: Partial<MenuCategory>;
+    }) => menuService.updateCategory(id, updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['menu-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['all-menu-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['categories-with-count'] });
+      queryClient.invalidateQueries({ queryKey: ["menu-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["all-menu-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["categories-with-count"] });
       toast({
         title: "Category Updated",
         description: "Menu category has been updated successfully!",
@@ -492,7 +573,6 @@ export const useUpdateCategory = () => {
   });
 };
 
-
 export const useDeleteCategory = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -500,9 +580,9 @@ export const useDeleteCategory = () => {
   return useMutation({
     mutationFn: (id: string) => menuService.deleteCategory(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['menu-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['all-menu-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['categories-with-count'] });
+      queryClient.invalidateQueries({ queryKey: ["menu-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["all-menu-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["categories-with-count"] });
       toast({
         title: "Category Deleted",
         description: "Menu category has been removed successfully!",
@@ -523,11 +603,12 @@ export const useReorderCategories = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (categoryIds: string[]) => menuService.reorderCategories(categoryIds),
+    mutationFn: (categoryIds: string[]) =>
+      menuService.reorderCategories(categoryIds),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['menu-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['all-menu-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['categories-with-count'] });
+      queryClient.invalidateQueries({ queryKey: ["menu-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["all-menu-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["categories-with-count"] });
       toast({
         title: "Categories Reordered",
         description: "Category order has been updated successfully!",

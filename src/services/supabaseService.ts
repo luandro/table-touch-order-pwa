@@ -1,5 +1,4 @@
-
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from "@/integrations/supabase/client";
 import type {
   Restaurant,
   Table,
@@ -10,17 +9,17 @@ import type {
   Order,
   OrderInsert,
   TableUpdate,
-  OrderUpdate
-} from '@/types/supabase';
-import { mapToSupabaseOrderStatus } from '@/utils/dataTransform';
+  OrderUpdate,
+} from "@/types/supabase";
+import { mapToSupabaseOrderStatus } from "@/utils/dataTransform";
 
 // Restaurant service
 export const restaurantService = {
   async getRestaurant(id: string): Promise<Restaurant | null> {
     const { data, error } = await supabase
-      .from('restaurants')
-      .select('*')
-      .eq('id', id)
+      .from("restaurants")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error) throw error;
@@ -29,23 +28,51 @@ export const restaurantService = {
 
   async getDefaultRestaurant(): Promise<Restaurant | null> {
     const { data, error } = await supabase
-      .from('restaurants')
-      .select('*')
+      .from("restaurants")
+      .select("*")
       .limit(1)
       .single();
 
     if (error) throw error;
     return data;
-  }
+  },
+
+  async updateRestaurantSettings(
+    id: string,
+    settings: {
+      name?: string;
+      logo?: string;
+      description?: string;
+    },
+  ): Promise<Restaurant> {
+    // Map our settings to the correct database fields
+    const dbSettings: any = {};
+    if (settings.name !== undefined) dbSettings.name = settings.name;
+    if (settings.logo !== undefined) dbSettings.logo_url = settings.logo;
+    if (settings.description !== undefined) {
+      // Store description in settings JSON field
+      dbSettings.settings = { description: settings.description };
+    }
+
+    const { data, error } = await supabase
+      .from("restaurants")
+      .update(dbSettings)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
 };
 
 // Tables service
 export const tablesService = {
   async getAllTables(): Promise<Table[]> {
     const { data, error } = await supabase
-      .from('tables')
-      .select('*')
-      .order('table_number');
+      .from("tables")
+      .select("*")
+      .order("table_number");
 
     if (error) throw error;
     return data || [];
@@ -53,14 +80,14 @@ export const tablesService = {
 
   async getTableById(id: string): Promise<Table | null> {
     const { data, error } = await supabase
-      .from('tables')
-      .select('*')
-      .eq('id', id)
+      .from("tables")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error) {
       // Return null for UUID format errors or not found errors
-      if (error.code === '22P02' || error.code === 'PGRST116') {
+      if (error.code === "22P02" || error.code === "PGRST116") {
         return null;
       }
       throw error;
@@ -70,14 +97,14 @@ export const tablesService = {
 
   async getTableByNumber(tableNumber: number): Promise<Table | null> {
     const { data, error } = await supabase
-      .from('tables')
-      .select('*')
-      .eq('table_number', tableNumber)
+      .from("tables")
+      .select("*")
+      .eq("table_number", tableNumber)
       .single();
 
     if (error) {
       // Return null for not found errors
-      if (error.code === 'PGRST116') {
+      if (error.code === "PGRST116") {
         return null;
       }
       throw error;
@@ -87,9 +114,9 @@ export const tablesService = {
 
   async updateTableStatus(id: string, updates: TableUpdate): Promise<Table> {
     const { data, error } = await supabase
-      .from('tables')
+      .from("tables")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -97,11 +124,14 @@ export const tablesService = {
     return data;
   },
 
-  // Auto-create table if it doesn't exist
-  async getOrCreateTable(tableIdentifier: string): Promise<Table> {
+  // Get table by identifier without auto-creation
+  async getOrCreateTable(tableIdentifier: string): Promise<Table | null> {
     try {
       // Check if it's a valid UUID format
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tableIdentifier);
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          tableIdentifier,
+        );
 
       let table = null;
 
@@ -118,84 +148,105 @@ export const tablesService = {
         if (table) return table;
       }
 
-      // If still not found, create new table
-      // For non-numeric identifiers, find the next available table number to avoid conflicts
-      let newTableNumber = tableNumber;
-      if (isNaN(tableNumber)) {
+      // Return null if table not found (no auto-creation)
+      return null;
+    } catch (error) {
+      console.error("Error in getOrCreateTable:", error);
+      return null;
+    }
+  },
+
+  // Admin-only table creation
+  async createTable(tableData: {
+    table_number?: number;
+    restaurant_id: string;
+    status?: string;
+    mode?: string;
+  }): Promise<Table> {
+    try {
+      // If no table number provided, find next available
+      let tableNumber = tableData.table_number;
+      if (!tableNumber) {
         const { data: existingTables } = await supabase
-          .from('tables')
-          .select('table_number')
-          .order('table_number', { ascending: false })
+          .from("tables")
+          .select("table_number")
+          .eq("restaurant_id", tableData.restaurant_id)
+          .order("table_number", { ascending: false })
           .limit(1);
 
         const maxTableNumber = existingTables?.[0]?.table_number || 0;
-        newTableNumber = maxTableNumber + 1;
+        tableNumber = maxTableNumber + 1;
       }
 
       const { data, error } = await supabase
-        .from('tables')
+        .from("tables")
         .insert({
-          table_number: newTableNumber,
-          status: 'available',
-          mode: 'customer_order'
+          table_number: tableNumber,
+          restaurant_id: tableData.restaurant_id,
+          status: tableData.status || "available",
+          mode: tableData.mode || "customer_order",
         })
         .select()
         .single();
 
       if (error) throw error;
       return data;
-
     } catch (error) {
-      console.error('Error in getOrCreateTable:', error);
+      console.error("Error creating table:", error);
       throw error;
     }
   },
 
   // Get table with current customer info from active orders
-  async getTableWithDetails(tableId: string): Promise<Table & { currentCustomer?: string; lastActivity?: string }> {
+  async getTableWithDetails(
+    tableId: string,
+  ): Promise<Table & { currentCustomer?: string; lastActivity?: string }> {
     const table = await this.getTableById(tableId);
-    if (!table) throw new Error('Table not found');
+    if (!table) throw new Error("Table not found");
 
     // Get current customer from active orders
     const { data: orders } = await supabase
-      .from('orders')
-      .select('bill_name, created_at, updated_at')
-      .eq('table_id', tableId)
-      .not('status', 'in', '(paid,cancelled)')
-      .order('created_at', { ascending: false })
+      .from("orders")
+      .select("bill_name, created_at, updated_at")
+      .eq("table_id", tableId)
+      .not("status", "in", "(paid,cancelled)")
+      .order("created_at", { ascending: false })
       .limit(1);
 
     const currentOrder = orders?.[0];
-    const lastActivity = currentOrder?.updated_at || currentOrder?.created_at || table.created_at;
+    const lastActivity =
+      currentOrder?.updated_at || currentOrder?.created_at || table.created_at;
 
     return {
       ...table,
       currentCustomer: currentOrder?.bill_name || undefined,
-      lastActivity: lastActivity || undefined
+      lastActivity: lastActivity || undefined,
     };
   },
 
   // Mark table as free and cancel all active orders
-  async markTableFree(tableId: string): Promise<{ table: Table; cancelledOrders: Order[] }> {
+  async markTableFree(
+    tableId: string,
+  ): Promise<{ table: Table; cancelledOrders: Order[] }> {
     // Get all active orders for the table
     const { data: activeOrders } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('table_id', tableId)
-      .not('status', 'in', '(paid,cancelled)');
+      .from("orders")
+      .select("*")
+      .eq("table_id", tableId)
+      .not("status", "in", "(paid,cancelled)");
 
     // Cancel all active orders in a single batch operation
     const cancelledOrders: Order[] = [];
     if (activeOrders && activeOrders.length > 0) {
-      const orderIds = activeOrders.map(order => order.id);
+      const orderIds = activeOrders.map((order) => order.id);
 
       const { data: updatedOrders } = await supabase
-        .from('orders')
+        .from("orders")
         .update({
-          status: 'cancelled',
-          updated_at: new Date().toISOString()
+          status: "cancelled",
+          updated_at: new Date().toISOString(),
         })
-        .in('id', orderIds)
+        .in("id", orderIds)
         .select();
 
       if (updatedOrders) {
@@ -205,16 +256,20 @@ export const tablesService = {
 
     // Update table status to available
     const table = await this.updateTableStatus(tableId, {
-      status: 'available'
+      status: "available",
     });
 
     return { table, cancelledOrders };
   },
 
   // Create table reservation
-  async createReservation(tableId: string, customerName: string, notes?: string): Promise<Table> {
+  async createReservation(
+    tableId: string,
+    customerName: string,
+    notes?: string,
+  ): Promise<Table> {
     const table = await this.updateTableStatus(tableId, {
-      status: 'reserved'
+      status: "reserved",
     });
 
     // Could extend this to create a separate reservations table if needed
@@ -222,53 +277,54 @@ export const tablesService = {
   },
 
   // Delete table (with confirmation)
-  async deleteTable(tableId: string): Promise<{ success: boolean; message: string }> {
+  async deleteTable(
+    tableId: string,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       // Check for active orders
       const { data: activeOrders } = await supabase
-        .from('orders')
-        .select('id')
-        .eq('table_id', tableId)
-        .not('status', 'in', '(paid,cancelled)');
+        .from("orders")
+        .select("id")
+        .eq("table_id", tableId)
+        .not("status", "in", "(paid,cancelled)");
 
       if (activeOrders && activeOrders.length > 0) {
         return {
           success: false,
-          message: `Cannot delete table with ${activeOrders.length} active order(s). Please complete or cancel all orders first.`
+          message: `Cannot delete table with ${activeOrders.length} active order(s). Please complete or cancel all orders first.`,
         };
       }
 
       // Delete the table (cascade will handle related records)
       const { error } = await supabase
-        .from('tables')
+        .from("tables")
         .delete()
-        .eq('id', tableId);
+        .eq("id", tableId);
 
       if (error) throw error;
 
       return {
         success: true,
-        message: 'Table deleted successfully'
+        message: "Table deleted successfully",
       };
-
     } catch (error) {
-      console.error('Error deleting table:', error);
+      console.error("Error deleting table:", error);
       return {
         success: false,
-        message: 'Failed to delete table'
+        message: "Failed to delete table",
       };
     }
-  }
+  },
 };
 
 // Menu service
 export const menuService = {
   async getCategories(): Promise<MenuCategory[]> {
     const { data, error } = await supabase
-      .from('menu_categories')
-      .select('*')
-      .eq('active', true)
-      .order('order_index');
+      .from("menu_categories")
+      .select("*")
+      .eq("active", true)
+      .order("order_index");
 
     if (error) throw error;
     return data || [];
@@ -276,45 +332,51 @@ export const menuService = {
 
   async getAllCategories(): Promise<MenuCategory[]> {
     const { data, error } = await supabase
-      .from('menu_categories')
-      .select('*')
-      .order('order_index');
+      .from("menu_categories")
+      .select("*")
+      .order("order_index");
 
     if (error) throw error;
     return data || [];
   },
 
-  async getCategoriesWithItemCount(): Promise<(MenuCategory & { item_count: number })[]> {
+  async getCategoriesWithItemCount(): Promise<
+    (MenuCategory & { item_count: number })[]
+  > {
     const { data, error } = await supabase
-      .from('menu_categories')
-      .select(`
+      .from("menu_categories")
+      .select(
+        `
         *,
         menu_items(count)
-      `)
-      .order('order_index');
+      `,
+      )
+      .order("order_index");
 
     if (error) throw error;
 
-    return (data || []).map(category => ({
+    return (data || []).map((category) => ({
       ...category,
-      item_count: category.menu_items?.[0]?.count || 0
+      item_count: category.menu_items?.[0]?.count || 0,
     }));
   },
 
   async getCategoryById(id: string): Promise<MenuCategory | null> {
     const { data, error } = await supabase
-      .from('menu_categories')
-      .select('*')
-      .eq('id', id)
+      .from("menu_categories")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error) throw error;
     return data;
   },
 
-  async createCategory(category: Omit<MenuCategory, 'id' | 'created_at' | 'updated_at'>): Promise<MenuCategory> {
+  async createCategory(
+    category: Omit<MenuCategory, "id" | "created_at" | "updated_at">,
+  ): Promise<MenuCategory> {
     const { data, error } = await supabase
-      .from('menu_categories')
+      .from("menu_categories")
       .insert(category)
       .select()
       .single();
@@ -323,11 +385,14 @@ export const menuService = {
     return data;
   },
 
-  async updateCategory(id: string, updates: Partial<MenuCategory>): Promise<MenuCategory> {
+  async updateCategory(
+    id: string,
+    updates: Partial<MenuCategory>,
+  ): Promise<MenuCategory> {
     const { data, error } = await supabase
-      .from('menu_categories')
+      .from("menu_categories")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -338,9 +403,9 @@ export const menuService = {
   async deleteCategory(id: string): Promise<MenuCategory> {
     // Soft delete - set active to false
     const { data, error } = await supabase
-      .from('menu_categories')
+      .from("menu_categories")
       .update({ active: false })
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -351,14 +416,14 @@ export const menuService = {
   async reorderCategories(categoryIds: string[]): Promise<void> {
     const updates = categoryIds.map((id, index) => ({
       id,
-      order_index: index
+      order_index: index,
     }));
 
     for (const update of updates) {
       const { error } = await supabase
-        .from('menu_categories')
+        .from("menu_categories")
         .update({ order_index: update.order_index })
-        .eq('id', update.id);
+        .eq("id", update.id);
 
       if (error) throw error;
     }
@@ -366,9 +431,9 @@ export const menuService = {
 
   async getMenuItems(): Promise<MenuItem[]> {
     const { data, error } = await supabase
-      .from('menu_items')
-      .select('*')
-      .order('order_index');
+      .from("menu_items")
+      .select("*")
+      .order("order_index");
 
     if (error) throw error;
     return data || [];
@@ -376,11 +441,11 @@ export const menuService = {
 
   async getMenuItemsByCategory(categoryId: string): Promise<MenuItem[]> {
     const { data, error } = await supabase
-      .from('menu_items')
-      .select('*')
-      .eq('category_id', categoryId)
-      .eq('active', true)
-      .order('order_index');
+      .from("menu_items")
+      .select("*")
+      .eq("category_id", categoryId)
+      .eq("active", true)
+      .order("order_index");
 
     if (error) throw error;
     return data || [];
@@ -388,9 +453,9 @@ export const menuService = {
 
   async getMenuItemById(id: string): Promise<MenuItem | null> {
     const { data, error } = await supabase
-      .from('menu_items')
-      .select('*')
-      .eq('id', id)
+      .from("menu_items")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error) throw error;
@@ -399,7 +464,7 @@ export const menuService = {
 
   async createMenuItem(item: MenuItemInsert): Promise<MenuItem> {
     const { data, error } = await supabase
-      .from('menu_items')
+      .from("menu_items")
       .insert(item)
       .select()
       .single();
@@ -410,9 +475,9 @@ export const menuService = {
 
   async updateMenuItem(id: string, updates: MenuItemUpdate): Promise<MenuItem> {
     const { data, error } = await supabase
-      .from('menu_items')
+      .from("menu_items")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -423,9 +488,9 @@ export const menuService = {
   async deleteMenuItem(id: string): Promise<MenuItem> {
     // Hard delete - removes the record permanently
     const { data, error } = await supabase
-      .from('menu_items')
+      .from("menu_items")
       .delete()
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -433,11 +498,14 @@ export const menuService = {
     return data;
   },
 
-  async toggleMenuItemAvailability(id: string, active: boolean): Promise<MenuItem> {
+  async toggleMenuItemAvailability(
+    id: string,
+    active: boolean,
+  ): Promise<MenuItem> {
     const { data, error } = await supabase
-      .from('menu_items')
+      .from("menu_items")
       .update({ active })
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -447,58 +515,66 @@ export const menuService = {
 
   async uploadMenuItemImage(file: File): Promise<string> {
     try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `menu-items/${fileName}`;
 
       // First, try to create the bucket if it doesn't exist
-      const { error: bucketError } = await supabase.storage.createBucket('menu-images', {
-        public: true,
-        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
-        fileSizeLimit: 5242880 // 5MB
-      });
+      const { error: bucketError } = await supabase.storage.createBucket(
+        "menu-images",
+        {
+          public: true,
+          allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
+          fileSizeLimit: 5242880, // 5MB
+        },
+      );
 
       // Ignore error if bucket already exists
-      if (bucketError && !bucketError.message.includes('already exists')) {
-        console.warn('Bucket creation warning:', bucketError.message);
+      if (bucketError && !bucketError.message.includes("already exists")) {
+        console.warn("Bucket creation warning:", bucketError.message);
       }
 
       const { error: uploadError } = await supabase.storage
-        .from('menu-images')
+        .from("menu-images")
         .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
+          cacheControl: "3600",
+          upsert: false,
         });
 
       if (uploadError) {
-        console.error('Upload error:', uploadError);
+        console.error("Upload error:", uploadError);
         throw new Error(`Failed to upload image: ${uploadError.message}`);
       }
 
       const { data: urlData } = supabase.storage
-        .from('menu-images')
+        .from("menu-images")
         .getPublicUrl(filePath);
 
       return urlData.publicUrl;
     } catch (error) {
-      console.error('Image upload service error:', error);
+      console.error("Image upload service error:", error);
       throw error;
     }
-  }
+  },
 };
 
 // Orders service
 export const ordersService = {
   async createOrder(order: OrderInsert): Promise<Order> {
     // Calculate subtotal if not provided
-    const subtotal = typeof order.subtotal === 'number'
-      ? order.subtotal
-      : Array.isArray(order.items)
-        ? order.items.reduce((sum, item: any) => sum + (Number(item.price) * Number(item.quantity)), 0)
-        : 0;
+    const subtotal =
+      typeof order.subtotal === "number"
+        ? order.subtotal
+        : Array.isArray(order.items)
+          ? order.items.reduce(
+              (sum, item: any) =>
+                sum + Number(item.price) * Number(item.quantity),
+              0,
+            )
+          : 0;
 
     const { data, error } = await supabase
-      .from('orders')
+      .from("orders")
       .insert([
         {
           id: crypto.randomUUID(),
@@ -507,8 +583,8 @@ export const ordersService = {
           items: order.items,
           subtotal,
           total: order.total,
-          status: order.status
-        }
+          status: order.status,
+        },
       ])
       .select()
       .single();
@@ -518,11 +594,11 @@ export const ordersService = {
   },
   async getOrdersByTable(tableId: string): Promise<Order[]> {
     const { data, error } = await supabase
-      .from('orders')
-      .select('*')
+      .from("orders")
+      .select("*")
       // TODO: should be table_id, so that the routes are protected as hash
-      .eq('table_id', tableId)
-      .order('created_at', { ascending: false });
+      .eq("table_id", tableId)
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
     return data || [];
@@ -530,12 +606,14 @@ export const ordersService = {
 
   async getAllOrders(): Promise<Order[]> {
     const { data, error } = await supabase
-      .from('orders')
-      .select(`
+      .from("orders")
+      .select(
+        `
         *,
         tables!inner(table_number)
-      `)
-      .order('created_at', { ascending: false });
+      `,
+      )
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
     return data || [];
@@ -544,12 +622,12 @@ export const ordersService = {
   async updateOrderStatus(id: string, status: string): Promise<Order> {
     const supabaseStatus = mapToSupabaseOrderStatus(status);
     const { data, error } = await supabase
-      .from('orders')
+      .from("orders")
       .update({
         status: supabaseStatus,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -559,50 +637,58 @@ export const ordersService = {
 
   async getOrderById(id: string): Promise<Order | null> {
     const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('id', id)
+      .from("orders")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error) throw error;
     return data;
   },
 
-  async cancelOrder(id: string, cancelledBy: 'customer' | 'admin' = 'customer'): Promise<Order> {
+  async cancelOrder(id: string): Promise<Order> {
     const { data, error } = await supabase
-      .from('orders')
+      .from("orders")
       .update({
-        status: status,
-        updated_at: new Date().toISOString()
+        status: "cancelled",
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
     if (error) throw error;
     return data;
-  }
+  },
 };
 
 // Real-time subscriptions
 export const subscribeToOrders = (callback: (payload: any) => void) => {
   return supabase
-    .channel('orders-changes')
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'orders'
-    }, callback)
+    .channel("orders-changes")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "orders",
+      },
+      callback,
+    )
     .subscribe();
 };
 
 export const subscribeToTables = (callback: (payload: any) => void) => {
   return supabase
-    .channel('tables-changes')
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'tables'
-    }, callback)
+    .channel("tables-changes")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "tables",
+      },
+      callback,
+    )
     .subscribe();
 };
