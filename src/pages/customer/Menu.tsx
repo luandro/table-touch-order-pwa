@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 import MenuItemCard from "@/components/customer/MenuItemCard";
 import OrderButton from "@/components/customer/OrderButton";
 import ItemDetailModal from "@/components/customer/ItemDetailModal";
@@ -17,11 +18,13 @@ import type {
   MenuCategory as SupabaseMenuCategory,
   MenuItem as SupabaseMenuItem,
 } from "@/types/supabase";
+import { billStorage, StorageError } from "@/utils/storage";
 
 const Menu = () => {
   const { tableId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [activeCategory, setActiveCategory] = useState<string>("");
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [billItems, setBillItems] = useState<BillItem[]>([]);
@@ -30,6 +33,7 @@ const Menu = () => {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [actualTableId, setActualTableId] = useState<string | null>(null);
   const [tableLoading, setTableLoading] = useState(true);
+  const [orderSubmitted, setOrderSubmitted] = useState(false);
 
   const customerName =
     localStorage.getItem("customerName") || t("common.labels.customer");
@@ -47,8 +51,8 @@ const Menu = () => {
   } = useMenuItemsByCategory(activeCategory);
   const { data: tableOrders = [] } = useOrdersByTable(actualTableId || "");
 
-  // Enable real-time updates for orders
-  useRealTimeOrders();
+  // Enable real-time updates for orders only when we have a table and it's not generic mode
+  useRealTimeOrders(!!actualTableId && !isGenericMode);
 
   // Check if there are active orders to show status
   const hasActiveOrders = tableOrders.some(
@@ -147,56 +151,100 @@ const Menu = () => {
     setIsItemModalOpen(true);
   };
 
-  // Place order logic
-  const handlePlaceOrder = async () => {
-    if (!actualTableId || billItems.length === 0) return;
+  // Place order logic with proper error handling and race condition prevention
+  const handlePlaceOrder = useCallback(async () => {
+    // Prevent double submission
+    if (!actualTableId || billItems.length === 0 || isPlacingOrder || orderSubmitted) {
+      return;
+    }
+
     setIsPlacingOrder(true);
+    setOrderSubmitted(true);
+
     try {
-      // Prepare order payload
+      // Prepare order payload with validation
       const orderPayload = {
         table_id: actualTableId,
-        bill_name: customerName,
+        bill_name: customerName.trim() || "Customer",
         items: billItems.map((item) => ({
           id: item.menuItem.id,
-          name: item.menuItem.name,
-          price: item.menuItem.price,
-          quantity: item.quantity,
-          notes: item.notes || "",
+          name: item.menuItem.name.trim(),
+          price: Number(item.menuItem.price),
+          quantity: Number(item.quantity),
+          notes: item.notes?.trim() || "",
         })),
-        total: billItems.reduce(
+        total: Number(billItems.reduce(
           (sum, item) => sum + item.menuItem.price * item.quantity,
           0,
-        ),
-        status: "pending",
+        ).toFixed(2)),
+        status: "pending" as const,
       };
+
+      // Validate order data
+      if (orderPayload.total <= 0) {
+        throw new Error("Invalid order total");
+      }
+
+      if (orderPayload.items.some(item => item.quantity <= 0 || item.price < 0)) {
+        throw new Error("Invalid item data");
+      }
+
       // Submit order to Supabase
       const { ordersService, tablesService } = await import(
         "@/services/supabaseService"
       );
+      
       await ordersService.createOrder(orderPayload);
+      
       // Update table status
       await tablesService.updateTableStatus(actualTableId, {
         status: "occupied",
       });
-      // Clear bill items
+
+      // Clear bill items safely
       setBillItems([]);
-      localStorage.removeItem("billItems");
-      // Show confirmation
-      alert(
-        t("customer.order.success", {
+      billStorage.clearBillItems(actualTableId);
+
+      // Show success notification
+      toast({
+        title: t("customer.order.success", {
           defaultValue: "Order placed successfully!",
         }),
-      );
-    } catch (err) {
-      alert(
-        t("customer.order.error", {
-          defaultValue: "Failed to place order. Please try again.",
+        description: t("customer.order.successDescription", {
+          defaultValue: "Your order has been sent to the kitchen.",
         }),
-      );
+      });
+
+    } catch (err) {
+      console.error("Order placement failed:", err);
+      
+      // Reset submission state on error so user can retry
+      setOrderSubmitted(false);
+
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      
+      toast({
+        title: t("customer.order.error", {
+          defaultValue: "Failed to place order",
+        }),
+        description: t("customer.order.errorDescription", {
+          defaultValue: "Please try again. If the problem persists, contact staff.",
+        }),
+        variant: "destructive",
+      });
+
+      // Log error for debugging
+      console.error("Order placement error details:", {
+        error: errorMessage,
+        tableId: actualTableId,
+        itemCount: billItems.length,
+        total: billItems.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0)
+      });
+      
     } finally {
       setIsPlacingOrder(false);
     }
-  };
+  }, [actualTableId, billItems, isPlacingOrder, orderSubmitted, customerName, toast, t]);
 
   const handleAddToBill = (
     item: MenuItem,
@@ -229,12 +277,28 @@ const Menu = () => {
     });
   };
 
-  const handleViewBill = () => {
-    // Store bill items in localStorage for bill page
-    localStorage.setItem("billItems", JSON.stringify(billItems));
-    setIsPlacingOrder(true);
-    navigate(`/table/${tableId}/bill`);
-  };
+  const handleViewBill = useCallback(() => {
+    try {
+      // Store bill items safely for bill page
+      if (!billStorage.saveBillItems(tableId || 'generic', billItems)) {
+        toast({
+          title: "Storage Warning",
+          description: "Unable to save order data. Please complete your order quickly.",
+          variant: "destructive",
+        });
+      }
+      
+      setIsPlacingOrder(true);
+      navigate(`/table/${tableId}/bill`);
+    } catch (error) {
+      console.error("Failed to save bill data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save your order. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [tableId, billItems, navigate, toast]);
 
   const handleQuickAdd = (item: MenuItem) => {
     handleAddToBill(item, 1);

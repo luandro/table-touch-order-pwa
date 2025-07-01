@@ -9,6 +9,8 @@ interface OrderButtonProps {
   total: number;
   onClick: () => void;
   isPlacing?: boolean;
+  successMessage?: string;
+  errorMessage?: string;
 }
 
 const OrderButton = ({

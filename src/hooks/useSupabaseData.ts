@@ -391,10 +391,12 @@ export const useUpdateRestaurantSettings = () => {
 };
 
 // Real-time subscriptions
-export const useRealTimeOrders = () => {
+export const useRealTimeOrders = (enabled: boolean = true) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    if (!enabled) return;
+
     const subscription = subscribeToOrders((payload) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
     });
@@ -402,7 +404,7 @@ export const useRealTimeOrders = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [queryClient]);
+  }, [queryClient, enabled]);
 };
 
 export const useRealTimeTables = () => {

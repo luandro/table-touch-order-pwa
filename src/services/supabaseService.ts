@@ -46,7 +46,11 @@ export const restaurantService = {
     },
   ): Promise<Restaurant> {
     // Map our settings to the correct database fields
-    const dbSettings: any = {};
+    const dbSettings: {
+      name?: string;
+      logo_url?: string;
+      settings?: { description: string };
+    } = {};
     if (settings.name !== undefined) dbSettings.name = settings.name;
     if (settings.logo !== undefined) dbSettings.logo_url = settings.logo;
     if (settings.description !== undefined) {
@@ -561,17 +565,62 @@ export const menuService = {
 // Orders service
 export const ordersService = {
   async createOrder(order: OrderInsert): Promise<Order> {
+    // Input validation
+    if (!order.table_id || typeof order.table_id !== 'string') {
+      throw new Error('Valid table ID is required');
+    }
+
+    if (!order.bill_name || typeof order.bill_name !== 'string' || order.bill_name.trim().length === 0) {
+      throw new Error('Customer name is required');
+    }
+
+    if (!Array.isArray(order.items) || order.items.length === 0) {
+      throw new Error('Order must contain at least one item');
+    }
+
+    // Validate each item
+    for (const item of order.items) {
+      if (!item || typeof item !== 'object') {
+        throw new Error('Invalid item data');
+      }
+      
+      const price = Number(item.price);
+      const quantity = Number(item.quantity);
+      
+      if (isNaN(price) || price < 0) {
+        throw new Error('Item price must be a valid positive number');
+      }
+      
+      if (isNaN(quantity) || quantity <= 0 || !Number.isInteger(quantity)) {
+        throw new Error('Item quantity must be a positive integer');
+      }
+
+      if (!item.name || typeof item.name !== 'string' || item.name.trim().length === 0) {
+        throw new Error('Item name is required');
+      }
+    }
+
     // Calculate subtotal if not provided
     const subtotal =
       typeof order.subtotal === "number"
         ? order.subtotal
         : Array.isArray(order.items)
           ? order.items.reduce(
-              (sum, item: any) =>
+              (sum, item: { price: number | string; quantity: number | string }) =>
                 sum + Number(item.price) * Number(item.quantity),
               0,
             )
           : 0;
+
+    // Validate totals
+    if (isNaN(subtotal) || subtotal <= 0) {
+      throw new Error('Order subtotal must be greater than zero');
+    }
+
+    const total = Number(order.total);
+    if (isNaN(total) || total <= 0) {
+      throw new Error('Order total must be greater than zero');
+    }
 
     const { data, error } = await supabase
       .from("orders")
@@ -663,7 +712,13 @@ export const ordersService = {
 };
 
 // Real-time subscriptions
-export const subscribeToOrders = (callback: (payload: any) => void) => {
+export const subscribeToOrders = (
+  callback: (payload: {
+    eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+    new?: Order;
+    old?: Order;
+  }) => void
+) => {
   return supabase
     .channel("orders-changes")
     .on(
@@ -678,7 +733,13 @@ export const subscribeToOrders = (callback: (payload: any) => void) => {
     .subscribe();
 };
 
-export const subscribeToTables = (callback: (payload: any) => void) => {
+export const subscribeToTables = (
+  callback: (payload: {
+    eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+    new?: Table;
+    old?: Table;
+  }) => void
+) => {
   return supabase
     .channel("tables-changes")
     .on(
