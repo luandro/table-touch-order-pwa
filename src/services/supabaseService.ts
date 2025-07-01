@@ -58,7 +58,13 @@ export const tablesService = {
       .eq('id', id)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      // Return null for UUID format errors or not found errors
+      if (error.code === '22P02' || error.code === 'PGRST116') {
+        return null;
+      }
+      throw error;
+    }
     return data;
   },
 
@@ -69,7 +75,13 @@ export const tablesService = {
       .eq('table_number', tableNumber)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      // Return null for not found errors
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      throw error;
+    }
     return data;
   },
 
@@ -88,9 +100,16 @@ export const tablesService = {
   // Auto-create table if it doesn't exist
   async getOrCreateTable(tableIdentifier: string): Promise<Table> {
     try {
-      // First try to get table by ID
-      let table = await this.getTableById(tableIdentifier);
-      if (table) return table;
+      // Check if it's a valid UUID format
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tableIdentifier);
+
+      let table = null;
+
+      // First try to get table by ID if it's a UUID
+      if (isUUID) {
+        table = await this.getTableById(tableIdentifier);
+        if (table) return table;
+      }
 
       // If not found by ID, try by table number if it's numeric
       const tableNumber = parseInt(tableIdentifier);
@@ -471,20 +490,37 @@ export const menuService = {
 // Orders service
 export const ordersService = {
   async createOrder(order: OrderInsert): Promise<Order> {
+    // Calculate subtotal if not provided
+    const subtotal = typeof order.subtotal === 'number'
+      ? order.subtotal
+      : Array.isArray(order.items)
+        ? order.items.reduce((sum, item: any) => sum + (Number(item.price) * Number(item.quantity)), 0)
+        : 0;
+
     const { data, error } = await supabase
       .from('orders')
-      .insert(order)
+      .insert([
+        {
+          id: crypto.randomUUID(),
+          table_id: order.table_id,
+          bill_name: order.bill_name,
+          items: order.items,
+          subtotal,
+          total: order.total,
+          status: order.status
+        }
+      ])
       .select()
       .single();
 
     if (error) throw error;
     return data;
   },
-
   async getOrdersByTable(tableId: string): Promise<Order[]> {
     const { data, error } = await supabase
       .from('orders')
       .select('*')
+      // TODO: should be table_id, so that the routes are protected as hash
       .eq('table_id', tableId)
       .order('created_at', { ascending: false });
 

@@ -11,12 +11,12 @@ interface OrderButtonProps {
   isPlacing?: boolean;
 }
 
-const OrderButton = ({ itemCount, total, onClick, isPlacing = false }: OrderButtonProps) => {
+const OrderButton = ({ itemCount, total, onClick, isPlacing = false, successMessage, errorMessage }: OrderButtonProps) => {
   const { t } = useTranslation();
   const hasItems = itemCount > 0;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 px-4 pb-4 z-50 bg-gradient-to-t from-white via-white to-transparent pt-4">
+    <div className="fixed inset-x-0 bottom-50vh px-4 pb-4 z-50 bg-gradient-to-t from-white via-white to-transparent pt-4">
       <Button
         onClick={onClick}
         disabled={!hasItems || isPlacing}
@@ -55,9 +55,9 @@ const OrderButton = ({ itemCount, total, onClick, isPlacing = false }: OrderButt
         </div>
 
         {/* Button text */}
-        <div className="absolute left-4 flex items-center space-x-2 ml-8">
+        <div className="absolute md:max-w-sm left-4 flex items-center space-x-2 ml-8">
           <ShoppingCart className="w-5 h-5" />
-          <span className="font-medium">
+          <span className="font-medium text-xs sm:text-xl">
             {isPlacing
               ? t('customer.order.placing', { defaultValue: 'Placing Order...' })
               : hasItems

@@ -21,13 +21,15 @@ const Menu = () => {
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [showOrderStatus, setShowOrderStatus] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [actualTableId, setActualTableId] = useState<string | null>(null);
+  const [tableLoading, setTableLoading] = useState(true);
 
   const customerName = localStorage.getItem('customerName') || t('common.labels.customer');
 
   // Fetch data from Supabase
   const { data: supabaseCategories = [], isLoading: loadingCategories, error: categoriesError } = useMenuCategories();
   const { data: supabaseMenuItems = [], isLoading: loadingItems, error: itemsError } = useMenuItemsByCategory(activeCategory);
-  const { data: tableOrders = [] } = useOrdersByTable(tableId || '');
+  const { data: tableOrders = [] } = useOrdersByTable(actualTableId || '');
 
   // Enable real-time updates for orders
   useRealTimeOrders();
@@ -36,6 +38,29 @@ const Menu = () => {
   const hasActiveOrders = tableOrders.some(order =>
     !['paid', 'cancelled'].includes(order.status || '')
   );
+
+  // Resolve table ID to actual UUID
+  useEffect(() => {
+    const resolveTableId = async () => {
+      if (!tableId) {
+        setTableLoading(false);
+        return;
+      }
+
+      try {
+        const { tablesService } = await import('@/services/supabaseService');
+        const table = await tablesService.getOrCreateTable(tableId);
+        setActualTableId(table.id);
+      } catch (error) {
+        console.error('Failed to resolve table ID:', error);
+        navigate('/');
+      } finally {
+        setTableLoading(false);
+      }
+    };
+
+    resolveTableId();
+  }, [tableId, navigate]);
 
   useEffect(() => {
     setShowOrderStatus(hasActiveOrders);
@@ -83,6 +108,42 @@ const Menu = () => {
     setIsItemModalOpen(true);
   };
 
+  // Place order logic
+  const handlePlaceOrder = async () => {
+    if (!actualTableId || billItems.length === 0) return;
+    setIsPlacingOrder(true);
+    try {
+      // Prepare order payload
+      const orderPayload = {
+        table_id: actualTableId,
+        bill_name: customerName,
+        items: billItems.map(item => ({
+          id: item.menuItem.id,
+          name: item.menuItem.name,
+          price: item.menuItem.price,
+          quantity: item.quantity,
+          notes: item.notes || ''
+        })),
+        total: billItems.reduce((sum, item) => sum + (item.menuItem.price * item.quantity), 0),
+        status: 'pending',
+      };
+      // Submit order to Supabase
+      const { ordersService, tablesService } = await import('@/services/supabaseService');
+      await ordersService.createOrder(orderPayload);
+      // Update table status
+      await tablesService.updateTableStatus(actualTableId, { status: 'occupied' });
+      // Clear bill items
+      setBillItems([]);
+      localStorage.removeItem('billItems');
+      // Show confirmation
+      alert(t('customer.order.success', { defaultValue: 'Order placed successfully!' }));
+    } catch (err) {
+      alert(t('customer.order.error', { defaultValue: 'Failed to place order. Please try again.' }));
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
   const handleAddToBill = (item: MenuItem, quantity: number, notes?: string) => {
     setBillItems(prev => {
       const existingIndex = prev.findIndex(billItem => billItem.menuItem.id === item.id);
@@ -95,12 +156,15 @@ const Menu = () => {
         };
         return updated;
       } else {
-        return [...prev, {
-          id: Date.now().toString(),
-          menuItem: item,
-          quantity,
-          notes
-        }];
+        return [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            menuItem: item,
+            quantity,
+            notes
+          }
+        ];
       }
     });
   };
@@ -117,6 +181,18 @@ const Menu = () => {
     // Show brief success feedback
     // You could add a toast notification here if desired
   };
+
+  // Loading state
+  if (tableLoading || loadingCategories) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-2 text-gray-600">{t('common.loading') || 'Loading...'}</p>
+        </div>
+      </div>
+    );
+  }
 
   // Error state
   if (categoriesError || itemsError) {
@@ -183,15 +259,17 @@ const Menu = () => {
         <Tabs value={activeCategory} onValueChange={setActiveCategory}>
           <TabsList className="w-full justify-start overflow-x-auto">
             {/* TODO: Add skeleton state when  loadingCategories*/}
-            {loadingCategories && <TabsTrigger
-              key={1}
-              value={''}
-              className="flex items-center space-x-2 whitespace-nowrap touch-target"
-            >
-              <span>{''}</span>
-              <span className="text-sm sm:text-base">{' '}</span>
-            </TabsTrigger>
-            }
+            {loadingCategories && (
+              <TabsTrigger
+                key={1}
+                value={''}
+                className="flex items-center space-x-2 whitespace-nowrap touch-target animate-pulse bg-gray-100 text-gray-400"
+                disabled
+              >
+                <span className="w-6 h-6 bg-gray-200 rounded-full mr-2" />
+                <span className="text-sm sm:text-base bg-gray-200 rounded w-16 h-4 inline-block" />
+              </TabsTrigger>
+            )}
             {categories.map(category => (
               <TabsTrigger
                 key={category.id}
@@ -215,8 +293,13 @@ const Menu = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* TODO: Add skeleton state when  loadingCategories*/}
-            {loadingItems && <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-            }
+            {loadingItems && (
+                <>
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-gray-200 animate-pulse rounded-lg h-32 w-full mb-4" />
+                  ))}
+                </>
+              )}
             {menuItems.map(item => (
               <MenuItemCard
                 key={item.id}
@@ -231,11 +314,11 @@ const Menu = () => {
 
       {/* Fixed Order Button */}
       <OrderButton
-        itemCount={billSummary.itemCount}
-        total={billSummary.total}
-        onClick={handleViewBill}
-        isPlacing={isPlacingOrder}
-      />
+         itemCount={billSummary.itemCount}
+         total={billSummary.total}
+         onClick={handlePlaceOrder}
+         isPlacing={isPlacingOrder}
+       />
 
       {/* Item Detail Modal */}
       <ItemDetailModal

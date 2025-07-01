@@ -24,7 +24,7 @@ const BillFloatingButton = ({ itemCount, total, onClick }: BillFloatingButtonPro
         size="lg"
       >
         <Receipt className="w-5 h-5 mr-2" />
-        <span className="font-medium">{t('customer.menu.viewBill')}</span>
+        <span className="font-medium">{t('customer.menu.viewOrders')}</span>
         <Badge
           variant="secondary"
           className="ml-3 bg-white text-orange-600 font-bold"

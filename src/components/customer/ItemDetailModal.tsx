@@ -119,7 +119,7 @@ const ItemDetailModal = ({ item, isOpen, onClose, onAddToBill }: ItemDetailModal
               className="flex-1 bg-orange-500 hover:bg-orange-600"
               disabled={!item.available}
             >
-              {t('customer.menu.addToBillWithPrice', { price: (item.price * quantity).toFixed(2) })}
+              {t('customer.menu.addToOrderWithPrice', { price: (item.price * quantity).toFixed(2) })}
             </Button>
           </div>
         </div>
