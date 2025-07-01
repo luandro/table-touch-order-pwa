@@ -5,6 +5,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   useOrdersByTable,
   useRealTimeOrders,
   useCancelOrder,
@@ -26,6 +36,7 @@ const OrderStatusCard = ({
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [lastStatusUpdate, setLastStatusUpdate] = useState<Date | null>(null);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   const currentTableId = tableId || paramTableId;
   const { data: orders = [], isLoading } = useOrdersByTable(
@@ -132,23 +143,24 @@ const OrderStatusCard = ({
 
   const handleCancelOrder = () => {
     if (!activeOrder) return;
+    setShowCancelDialog(true);
+  };
 
-    if (
-      window.confirm(
-        t("customer.order.confirmCancel", {
-          defaultValue: "Are you sure you want to cancel this order?",
-        }),
-      )
-    ) {
-      cancelOrder(
-        { id: activeOrder.id },
-        {
-          onSuccess: () => {
-            onClose?.();
-          },
+  const handleConfirmCancel = () => {
+    if (!activeOrder) return;
+    
+    cancelOrder(
+      { id: activeOrder.id },
+      {
+        onSuccess: () => {
+          setShowCancelDialog(false);
+          onClose?.();
         },
-      );
-    }
+        onError: () => {
+          setShowCancelDialog(false);
+        },
+      },
+    );
   };
 
   if (isLoading || !activeOrder) {
@@ -160,6 +172,7 @@ const OrderStatusCard = ({
     : "w-full";
 
   return (
+    <>
     <Card
       className={`${cardClasses} border-orange-200 bg-white ${lastStatusUpdate ? "notification-pulse" : ""}`}
     >
@@ -292,6 +305,37 @@ const OrderStatusCard = ({
         )}
       </CardContent>
     </Card>
+
+    {/* Cancel Order Confirmation Dialog */}
+    <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {t("customer.order.cancelOrder", { defaultValue: "Cancel Order" })}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {t("customer.order.confirmCancel", {
+              defaultValue: "Are you sure you want to cancel this order? This action cannot be undone.",
+            })}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={cancelling}>
+            {t("common.buttons.cancel", { defaultValue: "Cancel" })}
+          </AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleConfirmCancel}
+            disabled={cancelling}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            {cancelling
+              ? t("common.status.loading", { defaultValue: "Loading..." })
+              : t("customer.order.confirmCancelButton", { defaultValue: "Yes, Cancel Order" })}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   );
 };
 

@@ -25,7 +25,7 @@ const OrderButton = ({
   const hasItems = itemCount > 0;
 
   return (
-    <div className="fixed inset-x-0 bottom-50vh px-4 pb-4 z-50 bg-gradient-to-t from-white via-white to-transparent pt-4">
+    <div className="fixed inset-x-0 bottom-0 px-4 pb-4 z-50 bg-gradient-to-t from-white via-white to-transparent pt-4">
       <Button
         onClick={onClick}
         disabled={!hasItems || isPlacing}

@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ArrowLeft } from "lucide-react";
 import { useOrder, useTable, useCancelOrder } from "@/hooks/useSupabaseData";
 import { transformSupabaseOrder } from "@/utils/dataTransform";
@@ -19,6 +29,7 @@ const ExistingOrder = () => {
   } = useOrder(orderId || "");
   const { data: table } = useTable(supabaseOrder?.table_id || "");
   const { mutate: cancelOrder, isPending: cancelling } = useCancelOrder();
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   // Loading state
   if (orderLoading) {
@@ -100,17 +111,24 @@ const ExistingOrder = () => {
 
   const handleCancelOrder = () => {
     if (!supabaseOrder) return;
+    setShowCancelDialog(true);
+  };
 
-    if (window.confirm("Are you sure you want to cancel this order?")) {
-      cancelOrder(
-        { id: supabaseOrder.id },
-        {
-          onSuccess: () => {
-            navigate("/");
-          },
+  const handleConfirmCancel = () => {
+    if (!supabaseOrder) return;
+    
+    cancelOrder(
+      { id: supabaseOrder.id },
+      {
+        onSuccess: () => {
+          setShowCancelDialog(false);
+          navigate("/");
         },
-      );
-    }
+        onError: () => {
+          setShowCancelDialog(false);
+        },
+      },
+    );
   };
 
   return (
@@ -206,6 +224,28 @@ const ExistingOrder = () => {
           )}
         </div>
       </div>
+
+      {/* Cancel Order Confirmation Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Order</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this order? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cancelling}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmCancel}
+              disabled={cancelling}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {cancelling ? "Cancelling..." : "Yes, Cancel Order"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
