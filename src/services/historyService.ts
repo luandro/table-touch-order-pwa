@@ -31,7 +31,7 @@ export const historyService = {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as TableHistoryRecord;
   },
 
   // Get history for a specific table
@@ -43,7 +43,7 @@ export const historyService = {
       .order('timestamp', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as TableHistoryRecord[];
   },
 
   // Get recent history across all tables
@@ -58,7 +58,7 @@ export const historyService = {
       .limit(limit);
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as TableHistoryRecord[];
   },
 
   // Helper functions for common actions

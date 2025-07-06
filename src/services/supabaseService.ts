@@ -118,7 +118,7 @@ export const tablesService = {
         .insert({
           table_number: newTableNumber,
           status: 'available',
-          mode: 'customer_order'
+          mode: 'automatic'
         })
         .select()
         .single();

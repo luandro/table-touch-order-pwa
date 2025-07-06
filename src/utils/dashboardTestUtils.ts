@@ -133,11 +133,12 @@ export const testScenarios = {
 export const runAllTests = async () => {
   console.log('🚀 Starting Dashboard Tests...');
 
-  const results = {
+  const results: any = {
     dashboardLoad: await testScenarios.dashboardLoad(),
     newOrderNotification: testScenarios.newOrderNotification(),
     mobileExperience: testScenarios.mobileExperience(),
-    animationPerformance: testScenarios.animationPerformance()
+    animationPerformance: testScenarios.animationPerformance(),
+    realTimeUpdates: null
   };
 
   // Real-time updates test (async)

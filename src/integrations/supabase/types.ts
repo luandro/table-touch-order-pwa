@@ -9,6 +9,65 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bills: {
+        Row: {
+          adjustment_description: string | null
+          adjustments: number
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string | null
+          customer_name: string
+          id: string
+          paid_at: string | null
+          paid_by: string | null
+          pix_code: string | null
+          status: string
+          subtotal: number
+          table_id: string
+          total: number
+        }
+        Insert: {
+          adjustment_description?: string | null
+          adjustments?: number
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string | null
+          customer_name: string
+          id?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          pix_code?: string | null
+          status?: string
+          subtotal?: number
+          table_id: string
+          total?: number
+        }
+        Update: {
+          adjustment_description?: string | null
+          adjustments?: number
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string | null
+          customer_name?: string
+          id?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          pix_code?: string | null
+          status?: string
+          subtotal?: number
+          table_id?: string
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bills_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           created_at: string | null
@@ -138,10 +197,12 @@ export type Database = {
       }
       orders: {
         Row: {
+          bill_id: string | null
           bill_name: string | null
           created_at: string | null
           id: string
           items: Json
+          order_sequence: number | null
           status: string | null
           subtotal: number
           table_id: string | null
@@ -149,10 +210,12 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          bill_id?: string | null
           bill_name?: string | null
           created_at?: string | null
           id?: string
           items: Json
+          order_sequence?: number | null
           status?: string | null
           subtotal: number
           table_id?: string | null
@@ -160,10 +223,12 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          bill_id?: string | null
           bill_name?: string | null
           created_at?: string | null
           id?: string
           items?: Json
+          order_sequence?: number | null
           status?: string | null
           subtotal?: number
           table_id?: string | null
@@ -172,55 +237,17 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "orders_bill_id_fkey"
+            columns: ["bill_id"]
+            isOneToOne: false
+            referencedRelation: "bills"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "orders_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: false
             referencedRelation: "tables"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      table_history: {
-        Row: {
-          id: string
-          table_id: string | null
-          action: string
-          details: Json | null
-          admin_user_id: string | null
-          order_id: string | null
-          timestamp: string | null
-        }
-        Insert: {
-          id?: string
-          table_id?: string | null
-          action: string
-          details?: Json | null
-          admin_user_id?: string | null
-          order_id?: string | null
-          timestamp?: string | null
-        }
-        Update: {
-          id?: string
-          table_id?: string | null
-          action?: string
-          details?: Json | null
-          admin_user_id?: string | null
-          order_id?: string | null
-          timestamp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "table_history_table_id_fkey"
-            columns: ["table_id"]
-            isOneToOne: false
-            referencedRelation: "tables"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "table_history_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -255,6 +282,51 @@ export type Database = {
         }
         Relationships: []
       }
+      table_history: {
+        Row: {
+          action: string
+          admin_user_id: string | null
+          details: Json | null
+          id: string
+          order_id: string | null
+          table_id: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id?: string | null
+          details?: Json | null
+          id?: string
+          order_id?: string | null
+          table_id?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string | null
+          details?: Json | null
+          id?: string
+          order_id?: string | null
+          table_id?: string | null
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "table_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "table_history_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tables: {
         Row: {
           created_at: string | null
@@ -262,7 +334,7 @@ export type Database = {
           mode: string | null
           qr_code: string | null
           restaurant_id: string | null
-          status: string | null
+          status: Database["public"]["Enums"]["table_status"] | null
           table_number: number
         }
         Insert: {
@@ -271,7 +343,7 @@ export type Database = {
           mode?: string | null
           qr_code?: string | null
           restaurant_id?: string | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["table_status"] | null
           table_number: number
         }
         Update: {
@@ -280,7 +352,7 @@ export type Database = {
           mode?: string | null
           qr_code?: string | null
           restaurant_id?: string | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["table_status"] | null
           table_number?: number
         }
         Relationships: [
@@ -298,10 +370,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_bill_total: {
+        Args: { bill_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      table_status: "available" | "occupied" | "reserved" | "cleaning"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -416,6 +491,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      table_status: ["available", "occupied", "reserved", "cleaning"],
+    },
   },
 } as const
